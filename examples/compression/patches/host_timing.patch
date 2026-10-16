@@ -1,0 +1,39 @@
+--- a/common/libs/compress/gzipOCLHost.cpp
++++ b/common/libs/compress/gzipOCLHost.cpp
+@@ -1118,7 +1118,9 @@
+ 
+     // Copy input data
+     std::memcpy(dbuf_in.data(), in, inBufferSize); // must be equal to input_size
+-    OCL_CHECK(err, err = m_q_dec[0]->enqueueMigrateMemObjects({*(buffer_dec_input)}, 0, NULL, NULL));
++    // innova2: the output (input x max CR) and size buffers too, so they are not copied inside the timed interval
++    OCL_CHECK(err, err = m_q_dec[0]->enqueueMigrateMemObjects({*(buffer_dec_input), *(buffer_dec_zlib_output), *(buffer_size)},
++                                                               0, NULL, NULL));
+     m_q_dec[0]->finish();
+ 
+     // enqueue decompression kernel
+@@ -2022,8 +2024,11 @@
+                                                                0 /* 0 means from host*/));
+     } else {
+         // Transfer the data to device
+-        OCL_CHECK(err, err = m_def_q->enqueueMigrateMemObjects({*(buffer_input), *(buffer_checksum_data)}, 0, nullptr,
+-                                                               nullptr));
++        // innova2: migrate the output and size buffers too, before the timer starts. Left out, XRT copies the 10x-input
++        // output buffer to the card when the kernel is enqueued, inside the timed interval, and the reported "kernel
++        // throughput" was a quarter of the kernel's (gzip8: 505 MB/s reported, 1.9 GB/s measured with xrt::run).
++        OCL_CHECK(err, err = m_def_q->enqueueMigrateMemObjects({*(buffer_input), *(buffer_checksum_data), *(buffer_output),
++                                                                *(buffer_cSize)}, 0, nullptr, nullptr));
+     }
+ 
+     m_def_q->finish();
+--- a/common/libs/compress/lz4OCLHost.cpp
++++ b/common/libs/compress/lz4OCLHost.cpp
+@@ -248,6 +248,9 @@
+ 
+         inBufVec.push_back(*(buffer_input));
+         inBufVec.push_back(*(buffer_block_size));
++        // innova2: the output and size buffers too, so XRT does not copy them inside the timed interval
++        inBufVec.push_back(*(buffer_output));
++        inBufVec.push_back(*(buffer_compressed_size));
+ 
+         // Migrate memory - Map host to device buffers
+         m_q->enqueueMigrateMemObjects(inBufVec, 0 /* 0 means from host*/);

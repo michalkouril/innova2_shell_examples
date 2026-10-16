@@ -1,0 +1,15 @@
+--- a/common/libs/compress/gzipBase.cpp
++++ b/common/libs/compress/gzipBase.cpp
+@@ -75,9 +75,9 @@
+         out[outIdx++] = checksum >> 8;
+         out[outIdx++] = checksum;
+     } else {
+-        struct stat istat;
+-        stat(m_inFileName.c_str(), &istat);
+-        unsigned long ifile_size = istat.st_size;
++        // innova2: ISIZE is the input size mod 2^32 (RFC 1952). The original stat()ed m_inFileName, which this path
++        // never sets, so the field held uninitialised stack data and gzip -d rejected every file ("length error").
++        unsigned long ifile_size = m_InputSize;
+         out[outIdx++] = checksum;
+         out[outIdx++] = checksum >> 8;
+         out[outIdx++] = checksum >> 16;

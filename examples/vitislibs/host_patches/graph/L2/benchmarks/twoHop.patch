@@ -1,0 +1,15 @@
+--- host/main.cpp
++++ host/main.cpp
+@@ -260,6 +260,12 @@
+     q.finish();
+ 
+     gettimeofday(&end_time, 0);
++    { // innova2: AMD's timing printout below is commented out; the kernel time from its profiling event
++        unsigned long k0, k1;
++        events_kernel[0].getProfilingInfo(CL_PROFILING_COMMAND_START, &k0);
++        events_kernel[0].getProfilingInfo(CL_PROFILING_COMMAND_END, &k1);
++        std::cout << "INFO: Kernel execution time " << (k1 - k0) / 1000000.0 << " ms" << std::endl;
++    }
+     std::cout << "kernel end------" << std::endl;
+     /*    std::cout << "Execution time " << tvdiff(&start_time, &end_time) / 1000.0 << "ms" << std::endl;
+ 

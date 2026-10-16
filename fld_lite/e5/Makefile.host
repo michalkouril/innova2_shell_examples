@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 the innova2 contributors
+# SPDX-License-Identifier: Apache-2.0
+# Host side of E5.1 (build on the card host; reuses the E1/E2/E3 DevX helpers)
+XRT ?= /opt/xilinx/xrt
+CFLAGS_DEVX = -std=gnu11 -O2 -Wall -I../e1 -I../e2 -I../e3
+
+e5_host: e5_host.cpp devx_cq.o devx_sq.o devx_rx.o
+	g++ -std=c++17 -O2 -Wall -Wno-address-of-packed-member -I../e1 -I../e2 -I../e3 -o $@ e5_host.cpp devx_cq.o devx_sq.o devx_rx.o \
+	    -I$(XRT)/include -L$(XRT)/lib -lxrt_coreutil -libverbs -lmlx5 -Wl,-rpath,$(XRT)/lib
+devx_cq.o: ../e3/devx_cq.c ../e3/devx_cq.h ../e1/prm.h
+	gcc $(CFLAGS_DEVX) -c ../e3/devx_cq.c -o $@
+devx_sq.o: ../e1/devx_sq.c ../e1/devx_sq.h ../e1/prm.h
+	gcc $(CFLAGS_DEVX) -c ../e1/devx_sq.c -o $@
+devx_rx.o: ../e2/devx_rx.c ../e2/devx_rx.h ../e1/prm.h
+	gcc $(CFLAGS_DEVX) -c ../e2/devx_rx.c -o $@
+clean:
+	rm -f e5_host devx_cq.o devx_sq.o devx_rx.o
+
+e52_host: e52_host.cpp zuc/zuc_model.h zuc/zuc_sbox.h devx_cq.o devx_sq.o devx_rx.o
+	g++ -std=c++17 -O2 -Wall -Wno-address-of-packed-member -Wno-misleading-indentation -I../e1 -I../e2 -I../e3 -o $@ e52_host.cpp devx_cq.o devx_sq.o devx_rx.o \
+	    -I$(XRT)/include -L$(XRT)/lib -lxrt_coreutil -libverbs -lmlx5 -Wl,-rpath,$(XRT)/lib
+
+e5gen_host: e5gen_host.cpp devx_cq.o devx_sq.o devx_rx.o
+	g++ -std=c++17 -O2 -Wall -Wno-address-of-packed-member -Wno-misleading-indentation -I../e1 -I../e2 -I../e3 -o $@ e5gen_host.cpp devx_cq.o devx_sq.o devx_rx.o \
+	    -I$(XRT)/include -L$(XRT)/lib -lxrt_coreutil -libverbs -lmlx5 -Wl,-rpath,$(XRT)/lib
+
+# UDP step 1 (2026-10-03): FLD-lite + udp_swap echo endpoint; RX rule {IPv4, UDP, dst ip, dport, !frag} + TAG (../s0)
+devx_rx_s0.o: ../s0/devx_rx_s0.c ../s0/devx_rx_s0.h ../e1/prm.h
+	gcc $(CFLAGS_DEVX) -I../s0 -c ../s0/devx_rx_s0.c -o $@
+e5udp_host: e5udp_host.cpp devx_cq.o devx_sq.o devx_rx_s0.o
+	g++ -std=c++17 -O2 -Wall -Wno-address-of-packed-member -I../e1 -I../s0 -I../e3 -o $@ e5udp_host.cpp devx_cq.o devx_sq.o devx_rx_s0.o \
+	    -I$(XRT)/include -L$(XRT)/lib -lxrt_coreutil -libverbs -lmlx5 -Wl,-rpath,$(XRT)/lib

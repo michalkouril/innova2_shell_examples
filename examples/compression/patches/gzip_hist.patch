@@ -1,0 +1,430 @@
+--- a/lz_compress.hpp
++++ b/lz_compress.hpp
+@@ -289,7 +289,12 @@
+ 
+             // Calculate Hash Value
+             uint32_t hash = 0;
+-            if (MIN_MATCH == 3) {
++            if (MIN_MATCH == 3 && LZ_DICT_SIZE > (1 << 12)) {    // innova2: a hash as wide as a larger dictionary
++                constexpr int c_hb = (LZ_DICT_SIZE >= (1 << 15)) ? 15 : (LZ_DICT_SIZE >= (1 << 14)) ? 14 : 13;
++                constexpr int c_sh = (c_hb + 2) / 3;
++                hash = ((((uint32_t)present_window[0] << c_sh) ^ present_window[1]) << c_sh ^ present_window[2]) &
++                       (LZ_DICT_SIZE - 1);
++            } else if (MIN_MATCH == 3) {
+                 hash = (present_window[0] << 4) ^ (present_window[1] << 3) ^ (present_window[2] << 2) ^
+                        (present_window[0] << 1) ^ (present_window[1]);
+             } else {
+--- a/lz_optional.hpp
++++ b/lz_optional.hpp
+@@ -537,6 +537,134 @@
+ }
+ 
+ /**
++ * @brief lzBooster for blocks preceded by history tokens (innova2: GZIP_HIST_BYTES); see lzBooster.
++ */
++template <int MAX_MATCH_LEN, int BLOCKSIZE = 32768, int BOOSTER_OFFSET_WINDOW = 16 * 1024, int LEFT_BYTES = 64>
++void lzBoosterHist(hls::stream<IntVectorStream_dt<32, 1> >& inStream, hls::stream<ap_uint<16> >& histLenStream,
++                   hls::stream<IntVectorStream_dt<32, 1> >& outStream) {
++    constexpr uint16_t c_fifo_depth = LEFT_BYTES + 2;
++    constexpr int c_boosterOffsetWindow = (BLOCKSIZE < BOOSTER_OFFSET_WINDOW) ? BLOCKSIZE : BOOSTER_OFFSET_WINDOW;
++    bool last_block = false;
++    bool block_end = true;
++    IntVectorStream_dt<32, 1> outStreamValue;
++    ap_uint<32> outValue = 0;
++
++    while (true) {
++        uint8_t local_mem[c_boosterOffsetWindow];
++        hls::stream<ap_uint<32> > lclBufStream("lclBufStream");
++#pragma HLS STREAM variable = lclBufStream depth = c_fifo_depth
++#pragma HLS BIND_STORAGE variable = lclBufStream type = fifo impl = srl
++        uint32_t iIdx = 0;
++
++        uint32_t match_loc = 0;
++        uint32_t match_len = 0;
++
++        outStreamValue.strobe = 1;
++
++        bool matchFlag = false;
++        bool outFlag = false;
++        bool boostFlag = false;
++        uint16_t skip_len = 0;
++        uint8_t nextMatchCh = local_mem[match_loc % c_boosterOffsetWindow];
++
++        // check and exit if end of data
++        auto nextVal = inStream.read();
++        if (nextVal.strobe == 0) {
++            outStreamValue.strobe = 0;
++            outStream << outStreamValue;
++            break;
++        }
++        // innova2: the block is preceded by H history tokens (the end of the previous block of the stream): their
++        // bytes go into the window, so matches that start in the history can be boosted, and nothing is output
++        const ap_uint<16> c_hist = histLenStream.read();
++    lz_booster_hist:
++        for (uint16_t h = 0; h < c_hist; ++h) {
++#pragma HLS PIPELINE II = 1
++            local_mem[h % c_boosterOffsetWindow] = nextVal.data[0].range(7, 0);
++            nextVal = inStream.read();
++        }
++        iIdx = c_hist;
++    // assuming that, at least bytes more than LEFT_BYTES will be present at the input
++    lz_booster_init_buf:
++        for (uint16_t i = 0; i < LEFT_BYTES; ++i) {
++#pragma HLS PIPELINE II = 1
++            auto tmp = nextVal.data[0];
++            nextVal = inStream.read();
++            lclBufStream << tmp;
++        }
++
++    lz_booster:
++        for (; nextVal.strobe != 0; ++iIdx) { // iterate through block data
++#pragma HLS PIPELINE II = 1
++#ifndef DISABLE_DEPENDENCE
++#pragma HLS dependence variable = local_mem inter false
++#endif
++            // read value from fifo
++            auto inValue = lclBufStream.read();
++            // read from input stream
++            auto tmp = inStream.read();
++            // write new value to fifo
++            lclBufStream << nextVal.data[0];
++            // update next val
++            nextVal = tmp;
++
++            uint8_t tCh = inValue.range(7, 0);
++            uint8_t tLen = inValue.range(15, 8);
++            uint16_t tOffset = inValue.range(31, 16);
++
++            if (tOffset < c_boosterOffsetWindow) {
++                boostFlag = true;
++            } else {
++                boostFlag = false;
++            }
++            uint8_t match_ch = nextMatchCh;
++            local_mem[iIdx % c_boosterOffsetWindow] = tCh;
++            outFlag = false;
++
++            if (skip_len) {
++                skip_len--;
++            } else if (matchFlag && (match_len < MAX_MATCH_LEN) && (tCh == match_ch)) {
++                match_len++;
++                match_loc++;
++                outValue.range(15, 8) = match_len;
++            } else {
++                match_len = 1;
++                match_loc = iIdx - tOffset;
++                if (iIdx != c_hist) outFlag = true;
++                outStreamValue.data[0] = outValue;
++                outValue = inValue;
++                if (tLen) {
++                    if (boostFlag) {
++                        matchFlag = true;
++                        skip_len = 0;
++                    } else {
++                        matchFlag = false;
++                        skip_len = tLen - 1;
++                    }
++                } else {
++                    matchFlag = false;
++                }
++            }
++            nextMatchCh = local_mem[match_loc % c_boosterOffsetWindow];
++            if (outFlag) {
++                outStream << outStreamValue;
++            }
++        }
++        outStreamValue.data[0] = outValue;
++        outStream << outStreamValue;
++    lz_booster_left_bytes:
++        for (uint16_t i = 0; i < LEFT_BYTES; ++i) {
++#pragma HLS PIPELINE II = 1
++            outStreamValue.data[0] = lclBufStream.read();
++            outStream << outStreamValue;
++        }
++        // Block end
++        outStreamValue.strobe = 0;
++        outStream << outStreamValue;
++    }
++}
++
++/**
+  * @brief This module helps in improving the compression ratio.
+  * Finds a better match length by performing more character matches
+  * with supported max match, while maintaining an offset window.
+--- a/zlib_compress_details.hpp
++++ b/zlib_compress_details.hpp
+@@ -170,6 +170,97 @@
+     strdSizeStream << 0;
+ }
+ 
++// innova2: as multicoreDistributor, but every block after a full block is preceded by that block's last HIST bytes
++// (the LZ77 history); histLenStream[core] carries HIST or 0 for each block, distSizeStream[core] the block size + it.
++// The history goes to histStream[core], the block to distStream[core] (as deep as one block, as before): histConcat
++// joins them in front of the core, so neither stream stalls the distributor.
++template <int FREQ_DWIDTH = 32, int DWIDTH = 64, int NUM_BLOCKS = 8, int BLOCK_SIZE = 32768, int HIST = 8192,
++          int MIN_BLCK_SIZE = 64>
++void multicoreDistributorHist(hls::stream<ap_uint<DWIDTH> >& inStream,
++                              hls::stream<uint32_t>& inSizeStream,
++                              hls::stream<ap_uint<DWIDTH> >& strdStream,
++                              hls::stream<ap_uint<16> >& strdSizeStream,
++                              hls::stream<ap_uint<DWIDTH> > distStream[NUM_BLOCKS],
++                              hls::stream<ap_uint<FREQ_DWIDTH> > distSizeStream[NUM_BLOCKS],
++                              hls::stream<ap_uint<16> > histLenStream[NUM_BLOCKS],
++                              hls::stream<ap_uint<DWIDTH> > histStream[NUM_BLOCKS],
++                              hls::stream<ap_uint<16> > histLenCatStream[NUM_BLOCKS]) {
++    constexpr int incr = DWIDTH / 8;
++    constexpr int c_histWords = HIST / incr;
++    static_assert((BLOCK_SIZE / incr) % c_histWords == 0, "the history must divide the block");
++    ap_uint<DWIDTH> hbuf[c_histWords];
++    ap_uint<4> core = 0;
++    uint32_t readSize = 0;
++    bool haveHist = false;
++    uint32_t inputSize = inSizeStream.read();
++
++    while (readSize < inputSize) {
++        core %= NUM_BLOCKS;
++        ap_uint<FREQ_DWIDTH> outputSize = ((readSize + BLOCK_SIZE) > inputSize) ? (inputSize - readSize) : BLOCK_SIZE;
++        bool storedBlockFlag = (outputSize <= MIN_BLCK_SIZE);
++        readSize += outputSize;
++        if (storedBlockFlag) {
++            strdSizeStream << outputSize;
++        multicoreDistributorStored:
++            for (ap_uint<FREQ_DWIDTH> j = 0; j < outputSize; j += incr) {
++#pragma HLS PIPELINE II = 1
++                strdStream << inStream.read();
++            }
++        } else {
++            const ap_uint<16> h = haveHist ? HIST : 0;
++            distSizeStream[core] << (ap_uint<FREQ_DWIDTH>)(outputSize + h);
++            histLenStream[core] << h;
++            histLenCatStream[core] << h;
++        multicoreDistributorHistory:
++            for (int j = 0; j < (haveHist ? c_histWords : 0); j++) {
++#pragma HLS PIPELINE II = 1
++                histStream[core] << hbuf[j];
++            }
++        multicoreDistributorBlock:
++            for (ap_uint<FREQ_DWIDTH> j = 0, w = 0; j < outputSize; j += incr, w++) {
++#pragma HLS PIPELINE II = 1
++                ap_uint<DWIDTH> outData = inStream.read();
++                distStream[core] << outData;
++                hbuf[w % c_histWords] = outData;            // a full block leaves its last HIST bytes in order
++            }
++            haveHist = (outputSize == BLOCK_SIZE);
++        }
++        core++;
++    }
++
++    for (int i = 0; i < NUM_BLOCKS; i++) {
++        distSizeStream[i] << 0;
++    }
++    strdSizeStream << 0;
++}
++
++// innova2: one core's input for multicoreDistributorHist -- its history words, then its block's words
++template <int FREQ_DWIDTH = 32, int DWIDTH = 64>
++void histConcat(hls::stream<ap_uint<DWIDTH> >& histStream,
++                hls::stream<ap_uint<16> >& histLenStream,
++                hls::stream<ap_uint<DWIDTH> >& blockStream,
++                hls::stream<ap_uint<FREQ_DWIDTH> >& sizeStream,
++                hls::stream<ap_uint<DWIDTH> >& outStream,
++                hls::stream<ap_uint<FREQ_DWIDTH> >& outSizeStream) {
++    constexpr int incr = DWIDTH / 8;
++    for (ap_uint<FREQ_DWIDTH> size = sizeStream.read(); size != 0; size = sizeStream.read()) {
++        outSizeStream << size;
++        const ap_uint<16> hw = histLenStream.read() / incr;
++        const ap_uint<FREQ_DWIDTH> words = (size - 1) / incr + 1;
++    histConcatHistory:
++        for (ap_uint<16> i = 0; i < hw; i++) {
++#pragma HLS PIPELINE II = 1
++            outStream << histStream.read();
++        }
++    histConcatBlock:
++        for (ap_uint<FREQ_DWIDTH> i = hw; i < words; i++) {
++#pragma HLS PIPELINE II = 1
++            outStream << blockStream.read();
++        }
++    }
++    outSizeStream << 0;
++}
++
+ template <class SIZE_DT = uint64_t,
+           int DWIDTH = 64,
+           int SIZE_DWIDTH = 4,
+--- a/zlib_compress.hpp
++++ b/zlib_compress.hpp
+@@ -43,6 +43,19 @@
+ #include "ap_axi_sdata.h"
+ #include "checksum_wrapper.hpp"
+ 
++#ifndef GZIP_MATCH_LEVEL
++#define GZIP_MATCH_LEVEL 6                 // innova2 (history build only): match candidates per hash bucket
++#endif
++#ifndef GZIP_DICT_BITS
++#define GZIP_DICT_BITS 12                  // innova2 (history build only): log2 of the hash buckets
++#endif
++#ifndef GZIP_BOOST_WIN
++#define GZIP_BOOST_WIN 16384               // innova2 (history build only): offsets the booster extends matches over
++#endif
++#ifndef GZIP_HIST_BYTES
++#define GZIP_HIST_BYTES 0                  // innova2: LZ77 history carried into each block (0 = as published)
++#endif
++
+ namespace xf {
+ namespace compression {
+ 
+@@ -73,6 +86,38 @@
+     xf::compression::lz77DivideStream<MAX_FREQ_DWIDTH, CORE_ID>(boosterStream, lz77OutStream, outTreeStream);
+ }
+ 
++// innova2: lz77Compress for blocks preceded by history bytes (histLenStream: their number per block). lzCompress sees
++// history + block as one block (positions spaced 2 x MAX_BLOCK_SIZE apart, so matches may start in the history);
++// lzBoosterHist drops the history tokens. Everything after it sees only the block's own tokens.
++template <int CORE_ID = 0,
++          int MAX_BLOCK_SIZE = 32 * 1024,
++          int MAX_FREQ_DWIDTH = 24,
++          int MATCH_LEN = 6,
++          int MIN_MATCH = 3,
++          int LZ_MAX_OFFSET_LIMIT = 32 * 1024,
++          int MAX_MATCH_LEN = 255>
++void lz77CompressHist(hls::stream<IntVectorStream_dt<8, 1> >& inStream,
++                      hls::stream<ap_uint<16> >& histLenStream,
++                      hls::stream<IntVectorStream_dt<9, 1> >& lz77OutStream,
++                      hls::stream<IntVectorStream_dt<MAX_FREQ_DWIDTH, 1> >& outTreeStream) {
++    constexpr int c_litDistCodeDepth = 286 + 30 + 4;
++#pragma HLS dataflow
++    hls::stream<IntVectorStream_dt<32, 1> > compressedStream("compressedStream");
++    hls::stream<IntVectorStream_dt<32, 1> > compressedStream1("compressedStream1");
++    hls::stream<IntVectorStream_dt<32, 1> > boosterStream("boosterStream");
++#pragma HLS STREAM variable = compressedStream depth = 4
++#pragma HLS STREAM variable = compressedStream1 depth = 4
++#pragma HLS STREAM variable = boosterStream depth = c_litDistCodeDepth
++#pragma HLS BIND_STORAGE variable = boosterStream type = FIFO impl = SRL
++
++    xf::compression::lzCompress<2 * MAX_BLOCK_SIZE, uint32_t, MATCH_LEN, MIN_MATCH, LZ_MAX_OFFSET_LIMIT, CORE_ID,
++                                GZIP_MATCH_LEVEL, 1, (1 << GZIP_DICT_BITS)>(inStream, compressedStream);
++    xf::compression::lzBestMatchFilter<MATCH_LEN, LZ_MAX_OFFSET_LIMIT>(compressedStream, compressedStream1);
++    xf::compression::lzBoosterHist<MAX_MATCH_LEN, MAX_BLOCK_SIZE, GZIP_BOOST_WIN>(compressedStream1, histLenStream,
++                                                                                boosterStream);
++    xf::compression::lz77DivideStream<MAX_FREQ_DWIDTH, CORE_ID>(boosterStream, lz77OutStream, outTreeStream);
++}
++
+ template <int CORE_ID = 0,
+           int MAX_BLOCK_SIZE = 32 * 1024,
+           int MATCH_LEN = 6,
+@@ -168,6 +213,19 @@
+     hls::stream<IntVectorStream_dt<9, 1> > lz77DownsizedStream[c_numBlocks];
+     hls::stream<IntVectorStream_dt<c_freq_dwidth, 1> > lz77Tree[c_numBlocks];
+     hls::stream<ap_uint<c_dwidth + c_size_dwidth> > mergeStream[c_numBlocks];
++#if GZIP_HIST_BYTES > 0
++    hls::stream<ap_uint<16> > histLen[c_numBlocks];                 // innova2: history bytes before each block
++    hls::stream<ap_uint<16> > histLenCat[c_numBlocks];
++    hls::stream<ap_uint<c_dwidth> > histData[c_numBlocks];          // innova2: the history itself
++    hls::stream<ap_uint<c_dwidth> > catStream[c_numBlocks];         // innova2: history + block, to the downsizer
++    hls::stream<ap_uint<c_freq_dwidth> > catSizeStream[c_numBlocks];
++#pragma HLS STREAM variable = histLen depth = 4
++#pragma HLS STREAM variable = histLenCat depth = 4
++#pragma HLS STREAM variable = histData depth = GZIP_HIST_BYTES / 8
++#pragma HLS BIND_STORAGE variable = histData type = FIFO impl = BRAM
++#pragma HLS STREAM variable = catStream depth = 4
++#pragma HLS STREAM variable = catSizeStream depth = 4
++#endif
+ 
+ #pragma HLS STREAM variable = checksumStream depth = c_defaultDepth
+ #pragma HLS STREAM variable = checksumSizeStream depth = c_defaultDepth
+@@ -209,30 +267,94 @@
+                                                          checksumOutStream, checksumTypeStream);
+ 
+     // distrubute block size data into each block in round-robin fashion
++#if GZIP_HIST_BYTES > 0
++    details::multicoreDistributorHist<c_freq_dwidth, c_dwidth, c_numBlocks, c_blockSize, GZIP_HIST_BYTES>(
++        coreStream, coreSizeStream, strdStream, strdSizeStream, distStream, distSizeStream, histLen, histData,
++        histLenCat);
++#else
+     details::multicoreDistributor<c_freq_dwidth, c_dwidth, c_numBlocks, c_blockSize>(
+         coreStream, coreSizeStream, strdStream, strdSizeStream, distStream, distSizeStream);
++#endif
+ 
+     // Parallel Buffers
++#if GZIP_HIST_BYTES > 0
++    for (uint8_t i = 0; i < c_numBlocks; i++) {
++#pragma HLS UNROLL
++        details::histConcat<c_freq_dwidth, c_dwidth>(histData[i], histLenCat[i], distStream[i], distSizeStream[i],
++                                                     catStream[i], catSizeStream[i]);
++        xf::compression::details::streamDownSizerSize<c_dwidth, 8, c_freq_dwidth>(catStream[i], catSizeStream[i],
++                                                                                  downStream[i]);
++    }
++#else
+     for (uint8_t i = 0; i < c_numBlocks; i++) {
+ #pragma HLS UNROLL
+         xf::compression::details::streamDownSizerSize<c_dwidth, 8, c_freq_dwidth>(distStream[i], distSizeStream[i],
+                                                                                   downStream[i]);
+     }
++#endif
+ 
+     // Parallel LZ77 Compress
+-    lz77Compress<0, c_blockSize, c_freq_dwidth>(downStream[0], lz77Stream[0], lz77Tree[0]);
++    
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<0, c_blockSize, c_freq_dwidth>(downStream[0], histLen[0], lz77Stream[0], lz77Tree[0]);
++#else
++        lz77Compress<0, c_blockSize, c_freq_dwidth>(downStream[0], lz77Stream[0], lz77Tree[0]);
++#endif
++
+     if (NUM_BLOCKS >= 2) {
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<1, c_blockSize, c_freq_dwidth>(downStream[1], histLen[1], lz77Stream[1], lz77Tree[1]);
++#else
+         lz77Compress<1, c_blockSize, c_freq_dwidth>(downStream[1], lz77Stream[1], lz77Tree[1]);
++#endif
++
+     }
+     if (NUM_BLOCKS >= 4) {
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<2, c_blockSize, c_freq_dwidth>(downStream[2], histLen[2], lz77Stream[2], lz77Tree[2]);
++#else
+         lz77Compress<2, c_blockSize, c_freq_dwidth>(downStream[2], lz77Stream[2], lz77Tree[2]);
++#endif
++
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<3, c_blockSize, c_freq_dwidth>(downStream[3], histLen[3], lz77Stream[3], lz77Tree[3]);
++#else
+         lz77Compress<3, c_blockSize, c_freq_dwidth>(downStream[3], lz77Stream[3], lz77Tree[3]);
++#endif
++
+     }
+     if (NUM_BLOCKS >= 8) {
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<4, c_blockSize, c_freq_dwidth>(downStream[4], histLen[4], lz77Stream[4], lz77Tree[4]);
++#else
+         lz77Compress<4, c_blockSize, c_freq_dwidth>(downStream[4], lz77Stream[4], lz77Tree[4]);
++#endif
++
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<5, c_blockSize, c_freq_dwidth>(downStream[5], histLen[5], lz77Stream[5], lz77Tree[5]);
++#else
+         lz77Compress<5, c_blockSize, c_freq_dwidth>(downStream[5], lz77Stream[5], lz77Tree[5]);
++#endif
++
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<6, c_blockSize, c_freq_dwidth>(downStream[6], histLen[6], lz77Stream[6], lz77Tree[6]);
++#else
+         lz77Compress<6, c_blockSize, c_freq_dwidth>(downStream[6], lz77Stream[6], lz77Tree[6]);
++#endif
++
++        
++#if GZIP_HIST_BYTES > 0
++        lz77CompressHist<7, c_blockSize, c_freq_dwidth>(downStream[7], histLen[7], lz77Stream[7], lz77Tree[7]);
++#else
+         lz77Compress<7, c_blockSize, c_freq_dwidth>(downStream[7], lz77Stream[7], lz77Tree[7]);
++#endif
++
+     }
+ 
+     for (uint8_t i = 0; i < c_numBlocks; i++) {

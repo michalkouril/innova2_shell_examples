@@ -1,0 +1,33 @@
+--- kernel/triangle_count_kernel.hpp
++++ kernel/triangle_count_kernel.hpp
+@@ -28,8 +28,9 @@
+ #define V 2
+ #define E 2
+ #else
+-#define V 800000
+-#define E 800000
++// innova2: host array sizes for AMD's europe_osm benchmark (50,912,018 vertices, 54,054,660 edges; was 800000)
++#define V 51000000
++#define E 54100000
+ #endif
+ 
+ #define N 1
+--- host/main.cpp
++++ host/main.cpp
+@@ -97,7 +97,7 @@
+     // Allocate Memory in Host Memory
+     int vertexNum;
+     int edgeNum;
+-    int TC_golden = 11;
++    int TC_golden = getenv("TC_GOLDEN") ? atoi(getenv("TC_GOLDEN")) : 11; // innova2: 11 is the bundled graph's count
+     uint64_t TC[N] = {0};
+ 
+     DT* offsets = aligned_alloc<DT>(V);
+@@ -269,6 +269,7 @@
+               (uint512*)offsets2, (uint512*)rows, TC);
+ #endif
+     uint64_t out = TC[0];
++    std::cout << "INFO: triangles counted " << out << " (expected " << TC_golden << ")" << std::endl; // innova2
+     if (TC_golden != out) {
+         nerr++;
+         logger.error(xf::common::utils_sw::Logger::Message::TEST_FAIL);

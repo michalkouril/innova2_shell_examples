@@ -1,0 +1,532 @@
+#!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 the innova2 contributors
+# SPDX-License-Identifier: Apache-2.0
+"""figz -- gzip on the Innova-2's FPGA, used like gzip.
+
+  figz [-cdfhkntqvV19] [-S .suf] [--xclbin F] [--chunk MB] [--cpu] [--no-daemon] [--stop] [file ...]
+
+Compresses with the card's 8-core xilGzipCompBlock and decompresses with xilDecompress, via XRT's Python bindings:
+examples/compression/gzip_figz has the compressor and four decompressors (figz then decompresses four members at
+once), gzip_combo one of each. The output is standard gzip: `gzip -d` reads it, and `figz -d` reads any gzip file.
+
+* Compression: the input is cut into chunks (--chunk, default 8 MB), each a complete gzip member (RFC 1952 allows
+  several; gzip -d joins them). Each member's header carries an extra field 'FZ' (FEXTRA, ignored by gzip) holding the
+  length of its compressed data, so figz can hand members to the FPGA without first inflating them. Chunks are
+  pipelined: the next is read while the card compresses the current one.
+* Decompression: each member goes to the FPGA with its header rewritten to the minimal form the kernel parses, and its
+  output is checked against the member's CRC32 and length. A member that fails the check -- the kernel returns
+  nothing for very highly compressed data (above roughly 100:1) -- is decompressed on the CPU (zlib) instead. Files
+  from other tools: single-member files go to the FPGA the same way; anything figz cannot place is done on the CPU.
+* No card, or --cpu: everything on the CPU (zlib, level 6), same file handling.
+* Resident helper: attaching to the card costs a new process about 0.3 s even when the xclbin is already loaded (the
+  load itself is skipped). So the first figz starts a helper that keeps the card attached; later figz runs hand it
+  their arguments and file descriptors over a local socket (in $XDG_RUNTIME_DIR, else ~/.cache/figz) and wait for its
+  exit code. The helper leaves after FIGZ_IDLE seconds without work (default 300) or on `figz --stop`; while it runs it
+  holds the card, so no other xclbin can be loaded. --no-daemon (or FIGZ_DAEMON=0) runs in-process.
+
+Card selection: FIGZ_DEVICE (a user-PF BDF such as 0000:04:00.1), else the Innova-2 running the inn2x r10 shell (with
+several, the one with the lowest BDF). Each card gets its own resident helper; --stop stops all of them. Without
+FIGZ_DEVICE a command whose card's helper is busy goes to the next card's helper (figz -c | figz -d on two cards).
+xclbin: --xclbin, else FIGZ_XCLBIN, else <repo>/xclbin/gzip_figz.xclbin (or gzip_combo.xclbin). Loading is a no-op
+when it is already on the card; another process using the card with a different xclbin makes figz fall back to the CPU
+(with a warning)."""
+import argparse, collections, fcntl, glob, io, json, os, socket, struct, subprocess, sys, time, zlib
+
+ME = os.path.basename(sys.argv[0])
+VBNV = 'innova2_innova2_xdma_202320_4'
+BLOCK = 32 * 1024
+HDR_MIN = bytes([0x1f, 0x8b, 8, 0, 0, 0, 0, 0, 0, 3])          # what the FPGA decompressor parses
+LAST = bytes([1, 0, 0, 0xff, 0xff])                              # final empty stored block after the kernel's blocks
+TAIL_MAX = 256       # a chunk's last block up to this size is not given to the card: the Vitis kernel hangs on a last
+                     # block of 65-66 bytes and corrupts short stored ones, so figz stores those bytes itself
+verbose = 0
+
+def say(*a):
+    print('%s:' % ME, *a, file=sys.stderr)
+
+
+class Card:
+    """The FPGA side: the xclbin loaded once (a hardware context), buffers allocated once per size and reused; data is
+    read straight into, and written straight out of, the buffers' host memory (bo.map())."""
+    def __init__(self, xclbin, bdf):
+        sys.path.insert(0, os.path.join(os.environ.get('XILINX_XRT', '/opt/xilinx/xrt'), 'python'))
+        import pyxrt
+        self.x = pyxrt
+        self.dev = pyxrt.device(bdf)
+        uuid = self.dev.register_xclbin(pyxrt.xclbin(xclbin))
+        self.ctx = pyxrt.hw_context(self.dev, uuid)              # loads the xclbin unless it is already on the card
+        self.kc = pyxrt.kernel(self.ctx, 'xilGzipCompBlock')
+        self.kd = []                                             # every xilDecompress compute unit
+        for i in range(1, 9):
+            try: self.kd.append(pyxrt.kernel(self.ctx, 'xilDecompress:{xilDecompress_%d}' % i))
+            except Exception: break
+        if not self.kd: self.kd = [pyxrt.kernel(self.ctx, 'xilDecompress')]
+        self.dslots = 2 * len(self.kd)                           # two members per decompressor in flight
+        self.TO = pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_TO_DEVICE
+        self.FROM = pyxrt.xclBOSyncDirection.XCL_BO_SYNC_BO_FROM_DEVICE
+        self.slots = {}
+
+    def _bo(self, k, size, arg):
+        b = self.x.bo(self.dev, max(size, 4096), self.x.bo.normal, k.group_id(arg))
+        return b, b.map()
+
+    def cslot(self, slot, chunk):
+        """compressor buffers for one slot (two slots: the card works on one while the other is filled)"""
+        if slot not in self.slots:
+            nb = (chunk + BLOCK - 1) // BLOCK
+            self.slots[slot] = (self._bo(self.kc, chunk, 0), self._bo(self.kc, chunk + chunk // 8 + 65536, 1),
+                                self._bo(self.kc, 8 * nb, 2), self._bo(self.kc, 4, 3))
+        return self.slots[slot]
+
+    def compress_start(self, slot, n):
+        """the slot's input buffer holds n bytes: start the compressor on them (all but a short last block, which
+        compress_finish appends as a stored block; an input that is only that goes to zlib)"""
+        (bi, mi), (bo, _), (bs, _), (bc, mc) = self.slots[slot]
+        r = n % BLOCK if n % BLOCK <= TAIL_MAX else 0
+        tail = bytes(mi[n - r:n])
+        if n == r:
+            return (None, slot, tail)
+        bi.sync(self.TO, n - r, 0)
+        mc[0:4] = struct.pack('<I', 0xffffffff); bc.sync(self.TO, 4, 0)
+        return (self.kc(bi, bo, bs, bc, n - r, 1), slot, tail)
+
+    def compress_finish(self, h):
+        """-> (memoryview of the deflate data in the output buffer, the bytes that end the member's deflate stream,
+        CRC32)"""
+        run, slot, tail = h
+        if run is None:                                          # a small input: zlib, one complete stream
+            c = zlib.compressobj(6, zlib.DEFLATED, -15)
+            return c.compress(tail) + c.flush(), b'', zlib.crc32(tail)
+        run.wait()
+        _, (bo, mo), (bs, ms), (bc, mc) = self.slots[slot]
+        bs.sync(self.FROM, 4, 0); bc.sync(self.FROM, 4, 0)
+        sz = struct.unpack('<I', ms[0:4])[0]; crc = struct.unpack('<I', mc[0:4])[0]
+        if sz == 0 or sz > len(mo):
+            raise RuntimeError('compressor returned %d bytes' % sz)
+        bo.sync(self.FROM, sz, 0)
+        if tail:                                                 # the short last block, stored and final
+            return mo[:sz], struct.pack('<BHH', 1, len(tail), 0xffff ^ len(tail)) + tail, zlib.crc32(tail, crc)
+        return mo[:sz], LAST, crc
+
+    def dbufs(self, slot, nin, nout):
+        key = 'd%d' % slot; cur = self.slots.get(key)
+        if cur is None or cur[0] < nin or cur[1] < nout:
+            nin, nout = max(nin, cur[0] if cur else 0), max(nout, cur[1] if cur else 0)
+            k = self.kd[slot % len(self.kd)]
+            cur = (nin, nout, self._bo(k, nin, 0), self._bo(k, nout, 1), self._bo(k, 8, 2))
+            self.slots[key] = cur
+        return cur
+
+    def decompress_start(self, slot, deflate, isize):
+        """one member's deflate data on decompressor slot % (their number), with the header rewritten to the minimal
+        form the kernel parses; 2 slots per decompressor, so the card works while finished members are checked"""
+        n = len(HDR_MIN) + len(deflate)
+        _, _, (bi, mi), (bo, mo), (bs, ms) = self.dbufs(slot, n, isize + 4096)
+        mi[0:len(HDR_MIN)] = HDR_MIN; mi[len(HDR_MIN):n] = deflate
+        bi.sync(self.TO, n, 0)
+        return self.kd[slot % len(self.kd)](bi, bo, bs, n), slot, isize
+
+    def decompress_finish(self, h):
+        """-> memoryview of the output, or None if the kernel's output does not have the member's length"""
+        run, slot, isize = h
+        run.wait()
+        _, _, _, (bo, mo), (bs, ms) = self.slots['d%d' % slot]
+        bs.sync(self.FROM, 4, 0); n = struct.unpack('<I', ms[0:4])[0]
+        if n != isize or n > len(mo): return None
+        if n: bo.sync(self.FROM, n, 0)
+        return mo[:n]
+
+
+def find_cards():
+    """the Innova-2 cards running inn2x r10, lowest BDF first (FIGZ_DEVICE: just that one)"""
+    bdf = os.environ.get('FIGZ_DEVICE')
+    if bdf: return [bdf]
+    hits = []
+    for d in glob.glob('/sys/bus/pci/devices/*'):
+        try:
+            if open(d + '/vendor').read().strip() == '0x10ee' and \
+               any(open(v).read().strip() == VBNV for v in glob.glob(d + '/rom.u.*/VBNV')):
+                hits.append(os.path.basename(d))
+        except OSError:
+            pass
+    if not hits:
+        raise RuntimeError('no Innova-2 card running %s found' % VBNV)
+    return sorted(hits)
+
+
+def find_card():
+    return find_cards()[0]                                       # several: the first (FIGZ_DEVICE picks another)
+
+
+def default_xclbin():
+    if os.environ.get('FIGZ_XCLBIN'): return os.environ['FIGZ_XCLBIN']
+    d = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'xclbin')
+    for n in ('gzip_figz.xclbin', 'gzip_combo.xclbin'):
+        if os.path.exists(os.path.join(d, n)): return os.path.realpath(os.path.join(d, n))
+    return os.path.join(d, 'gzip_figz.xclbin')
+
+
+# ---------------------------------------------------------------------------------------------------------------- gzip
+def header(dlen, mtime):
+    """a gzip member header with FEXTRA 'FZ' = the length of the member's deflate data (LE 32-bit)"""
+    extra = b'FZ' + struct.pack('<H', 4) + struct.pack('<I', dlen)
+    return bytes([0x1f, 0x8b, 8, 0x04]) + struct.pack('<I', mtime & 0xffffffff) + bytes([0, 3]) + \
+           struct.pack('<H', len(extra)) + extra
+
+
+def write_member(fout, deflate, tail, crc, isize, mtime):
+    """header, the kernel's deflate data (a memoryview, written without a copy), tail, CRC32 and ISIZE"""
+    fout.write(header(len(deflate) + len(tail), mtime)); fout.write(deflate); fout.write(tail)
+    fout.write(struct.pack('<II', crc, isize & 0xffffffff))
+    return 18 + 12 + len(deflate) + len(tail) + 8
+
+
+def readfull(fin, view):
+    """fill view from fin (pipes return short reads) -> bytes read"""
+    n = 0
+    while n < len(view):
+        k = fin.readinto(view[n:])
+        if not k: break
+        n += k
+    return n
+
+
+def compress(fin, fout, card, chunk, mtime, stats):
+    if card is None:                                             # CPU: one ordinary gzip stream
+        c = zlib.compressobj(6, zlib.DEFLATED, 31)
+        while True:
+            d = fin.read(chunk)
+            if not d: break
+            stats['in'] += len(d); o = c.compress(d); stats['out'] += len(o); fout.write(o)
+        o = c.flush(); stats['out'] += len(o); fout.write(o)
+        return
+    pend, slot = None, 0
+    while True:
+        (bi, mi), _, _, _ = card.cslot(slot, chunk)
+        n = readfull(fin, mi[:chunk])                            # the next chunk, straight into the card's buffer ...
+        h = card.compress_start(slot, n) if n else None          # ... compressed while the previous one is written
+        if pend is not None:
+            d, last, crc = card.compress_finish(pend[0])
+            stats['out'] += write_member(fout, d, last, crc, pend[1], mtime)
+        if h is None:
+            if pend is None:                                     # empty input: one empty member, as gzip writes
+                stats['out'] += write_member(fout, b'\x03\x00', b'', 0, 0, mtime)
+            break
+        stats['in'] += n; pend = (h, n); slot ^= 1
+        if n < chunk:                                            # end of input
+            d, last, crc = card.compress_finish(pend[0])
+            stats['out'] += write_member(fout, d, last, crc, n, mtime)
+            break
+
+
+def parse_header(b, p):
+    """-> (offset of the deflate data, FZ deflate length or None); raises ValueError for bad headers"""
+    if len(b) < p + 10 or b[p] != 0x1f or b[p + 1] != 0x8b or b[p + 2] != 8:
+        raise ValueError('not in gzip format')
+    flg = b[p + 3]; q = p + 10; fz = None
+    if flg & 4:
+        xlen = struct.unpack_from('<H', b, q)[0]; q += 2; e, end = q, q + xlen
+        while e + 4 <= end:
+            sid = b[e:e + 2]; sl = struct.unpack_from('<H', b, e + 2)[0]
+            if sid == b'FZ' and sl == 4: fz = struct.unpack_from('<I', b, e + 4)[0]
+            e += 4 + sl
+        q = end
+    if flg & 8: q = b.index(0, q) + 1
+    if flg & 16: q = b.index(0, q) + 1
+    if flg & 2: q += 2
+    return q, fz
+
+
+def members(b):
+    """-> list of (offset, deflate offset, deflate length or None) for the FZ-marked members, in order"""
+    out, p = [], 0
+    while p < len(b) and b[p:p + 2] == b'\x1f\x8b':
+        q, fz = parse_header(b, p)
+        out.append((p, q, fz))
+        if fz is None or q + fz + 8 > len(b): break
+        p = q + fz + 8
+    return out
+
+
+def decompress(fin, fout, card, stats):
+    b = fin.read(); mv = memoryview(b); stats['in'] += len(b)
+    if len(b) < 2 or b[0:2] != b'\x1f\x8b': raise ValueError('not in gzip format')
+    p = 0
+    if card:
+        pend, k = collections.deque(), 0
+        for p0, q, fz in members(b):                             # FZ members on the card, card.dslots at a time
+            if fz is None or q + fz + 8 > len(b): break
+            crc, isize = struct.unpack_from('<II', b, q + fz)
+            if len(pend) == card.dslots: done(fout, card, pend.popleft(), b, stats)      # in order, frees slot k
+            pend.append((card.decompress_start(k % card.dslots, mv[q:q + fz], isize), crc, q)); k += 1
+            p = q + fz + 8
+        while pend: done(fout, card, pend.popleft(), b, stats)
+        if p == 0:                                               # another tool's file: try it as one member
+            q, fz = parse_header(b, 0); crc, isize = struct.unpack_from('<II', b, len(b) - 8)
+            if isize > 0:
+                out = card.decompress_finish(card.decompress_start(0, mv[q:len(b) - 8], isize))
+                if out is not None and zlib.crc32(out) == crc:
+                    fout.write(out); stats['out'] += len(out); stats['fpga'] += 1; return
+    while p < len(b):                                            # the rest on the CPU, member by member
+        if b[p:p + 2] != b'\x1f\x8b':
+            if any(b[p:]): say('warning: trailing garbage ignored')
+            break
+        q, fz = parse_header(b, p)
+        out, used = inflate(b, q)
+        fout.write(out); stats['out'] += len(out); stats['cpu'] += 1; p = q + used + 8
+
+
+def done(fout, card, pend, b, stats):
+    h, crc, q = pend
+    out = card.decompress_finish(h)
+    if out is not None and zlib.crc32(out) == crc:
+        fout.write(out); stats['out'] += len(out); stats['fpga'] += 1
+    else:                                                        # e.g. a member compressed more than ~100:1
+        out, used = inflate(b, q)
+        fout.write(out); stats['out'] += len(out); stats['cpu'] += 1
+
+
+def inflate(b, q):
+    """raw deflate from b[q:] on the CPU, checking the member's CRC32 and ISIZE -> (data, deflate length)"""
+    d = zlib.decompressobj(-15)
+    out = d.decompress(b[q:]) + d.flush()
+    used = len(b) - q - len(d.unused_data)
+    if not d.eof: raise ValueError('unexpected end of file')
+    crc, isize = struct.unpack_from('<II', b, q + used)
+    if zlib.crc32(out) != crc or (len(out) & 0xffffffff) != isize: raise ValueError('invalid compressed data--crc error')
+    return out, used
+
+
+# ----------------------------------------------------------------------------------------------------------------- CLI
+def parser():
+    ap = argparse.ArgumentParser(prog=ME, add_help=False, description='gzip on the Innova-2 FPGA')
+    ap.add_argument('-c', '--stdout', '--to-stdout', action='store_true')
+    ap.add_argument('-d', '--decompress', '--uncompress', action='store_true')
+    ap.add_argument('-f', '--force', action='store_true')
+    ap.add_argument('-k', '--keep', action='store_true')
+    ap.add_argument('-t', '--test', action='store_true')
+    ap.add_argument('-v', '--verbose', action='count', default=0)
+    ap.add_argument('-q', '--quiet', action='store_true')
+    ap.add_argument('-n', '--no-name', action='store_true'); ap.add_argument('-N', '--name', action='store_true')
+    ap.add_argument('-S', '--suffix', default='.gz')
+    ap.add_argument('-h', '--help', action='store_true'); ap.add_argument('-V', '--version', action='store_true')
+    for k in range(1, 10): ap.add_argument('-%d' % k, dest='level', action='store_const', const=k)
+    ap.add_argument('--fast', dest='level', action='store_const', const=1)
+    ap.add_argument('--best', dest='level', action='store_const', const=9)
+    ap.add_argument('--xclbin', default=None); ap.add_argument('--chunk', type=int, default=8, help='MB per member')
+    ap.add_argument('--cpu', action='store_true', help='do not use the card')
+    ap.add_argument('--no-daemon', action='store_true'); ap.add_argument('--stop', action='store_true')
+    ap.add_argument('--daemon', action='store_true', help=argparse.SUPPRESS)
+    ap.add_argument('files', nargs='*')
+    return ap
+
+
+def open_card(xb, quiet):
+    try:
+        t = time.perf_counter(); card = Card(xb, find_card())
+        if verbose > 1: say('card ready (%s, %d decompressor(s)) in %.2f s' % (os.path.basename(xb), len(card.kd),
+                            time.perf_counter() - t))
+        return card
+    except Exception as e:
+        if not quiet: say('warning: FPGA not used (%s); using the CPU' % e)
+        return None
+
+
+def run(argv, card=False):
+    """one figz command line; card=False: attach (or not, --cpu) here"""
+    global verbose
+    a = parser().parse_args(argv)
+    if a.help: print(__doc__); return 0
+    if a.version: print('figz 1.0 (innova2_shell_examples; FPGA gzip via XRT)'); return 0
+    verbose = 0 if a.quiet else a.verbose
+    if a.test: a.decompress = True; a.stdout = True
+    files = a.files or ['-']
+
+    if a.cpu: card = None
+    elif card is False: card = open_card(a.xclbin or default_xclbin(), a.quiet)
+    rc = 0
+    for f in files:
+        try:
+            rc = max(rc, one(f, a, card))
+        except (ValueError, OSError, RuntimeError) as e:
+            say('%s: %s' % (f, e)); rc = 1
+    return rc
+
+
+def one(f, a, card):
+    stdin = f == '-'
+    if not stdin:
+        if not os.path.exists(f): say('%s: No such file or directory' % f); return 1
+        if not os.path.isfile(f): say('%s is not a regular file -- ignored' % f); return 2
+        to_file = not (a.stdout or a.test)                      # as gzip: suffix rules only when writing a file
+        if to_file and not a.decompress and f.endswith(a.suffix) and not a.force:
+            say('%s already has %s suffix -- unchanged' % (f, a.suffix)); return 2
+        if to_file and a.decompress and not f.endswith(a.suffix):
+            say('%s: unknown suffix -- ignored' % f); return 2
+    out_name = None
+    if not (a.stdout or stdin):
+        out_name = f[:-len(a.suffix)] if a.decompress else f + a.suffix
+        if os.path.exists(out_name) and not a.force:
+            say('%s already exists; not overwritten (use -f)' % out_name); return 2
+    if not a.decompress and not a.test and (a.stdout or stdin) and sys.stdout.isatty() and not a.force:
+        say('compressed data not written to a terminal. Use -f to force compression.'); return 1
+    fin = sys.stdin.buffer if stdin else open(f, 'rb')
+    fout = open(os.devnull, 'wb') if a.test else (sys.stdout.buffer if (a.stdout or stdin) else open(out_name + '.figz-tmp', 'wb'))
+    st = os.fstat(fin.fileno()) if not stdin else None
+    stats = {'in': 0, 'out': 0, 'fpga': 0, 'cpu': 0}
+    t = time.perf_counter()
+    try:
+        if a.decompress: decompress(fin, fout, card, stats)
+        else: compress(fin, fout, card, a.chunk << 20, int(st.st_mtime) if st else 0, stats)
+        fout.flush()
+    except Exception:
+        if out_name: fout.close(); os.unlink(out_name + '.figz-tmp')
+        raise
+    dt = time.perf_counter() - t
+    if out_name:
+        fout.close(); os.chmod(out_name + '.figz-tmp', st.st_mode & 0o7777)
+        os.utime(out_name + '.figz-tmp', (st.st_atime, st.st_mtime)); os.replace(out_name + '.figz-tmp', out_name)
+        if not a.keep: fin.close(); os.unlink(f)
+    if verbose:
+        raw, comp = (stats['out'], stats['in']) if a.decompress else (stats['in'], stats['out'])
+        how = ('%d member(s) on the FPGA, %d on the CPU' % (stats['fpga'], stats['cpu'])) if a.decompress else \
+              ('FPGA' if card else 'CPU')
+        say('%s:\t%5.1f%% -- %s%s; %.0f MB/s (%s)' % (f, 100.0 * (1 - comp / raw) if raw else 0.0,
+            'OK' if a.test else ('replaced with ' + out_name if out_name and not a.keep else 'created ' + out_name if out_name else 'to stdout'),
+            '', raw / dt / 1e6 if dt else 0, how))
+    return 0
+
+
+# ------------------------------------------------------------------------------------------------- the resident helper
+def sock_dir():
+    d = os.environ.get('XDG_RUNTIME_DIR') or os.path.join(os.path.expanduser('~'), '.cache', 'figz')
+    os.makedirs(d, mode=0o700, exist_ok=True)
+    return d
+
+
+def sock_path(bdf):
+    """one helper per user and card"""
+    return os.path.join(sock_dir(), 'figz-%d-%s.sock' % (os.getuid(), bdf))
+
+
+def daemon(xb):
+    """keep the card attached; run each client's command line with the client's stdin / stdout / stderr"""
+    bdf = find_card(); path = sock_path(bdf)
+    lock = open(path + '.lock', 'w')
+    try: fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)        # one helper per user and card
+    except OSError: return 0
+    card = open_card(xb, True)
+    if card is None: return 1
+    try: os.unlink(path)
+    except FileNotFoundError: pass
+    srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM); old = os.umask(0o077); srv.bind(path); os.umask(old)
+    srv.listen(16); idle = float(os.environ.get('FIGZ_IDLE', 300)); srv.settimeout(1.0)
+    null = os.open(os.devnull, os.O_RDWR)
+    # One job at a time (a job owns the process's fds 0-2 and its cwd), in a worker thread so the socket keeps
+    # answering: a client that arrives while a job runs is told to run in-process. Waiting instead would deadlock
+    # pipelines of two figz commands (figz -c f | figz -d: the first blocks on the pipe the queued second would read).
+    import threading
+    busy = threading.Lock(); last = [time.monotonic()]; stop = threading.Event()
+    def job(c, req, fds):
+        try:
+            for i, f in enumerate(fds): os.dup2(f, i); os.close(f)
+            sys.stdin = io.TextIOWrapper(io.BufferedReader(io.FileIO(0, 'r', closefd=False)))
+            sys.stdout = io.TextIOWrapper(io.BufferedWriter(io.FileIO(1, 'w', closefd=False)), write_through=True)
+            sys.stderr = io.TextIOWrapper(io.BufferedWriter(io.FileIO(2, 'w', closefd=False)), write_through=True)
+            old = os.umask(req['umask'])
+            try:
+                os.chdir(req['cwd']); rc = run(req['argv'], card)
+            except SystemExit as e: rc = e.code if isinstance(e.code, int) else 1
+            except Exception as e: say(str(e)); rc = 1
+            finally:
+                os.umask(old)
+                for f in (sys.stdout, sys.stderr):
+                    try: f.flush()
+                    except Exception: pass
+                for i in range(3): os.dup2(null, i)             # let go of the client's pipes and terminal
+            try: c.sendall(struct.pack('<i', rc))
+            except OSError: pass
+        finally:
+            c.close(); last[0] = time.monotonic(); busy.release()
+    while not stop.is_set():
+        try: c, _ = srv.accept()
+        except socket.timeout:
+            if not busy.locked() and time.monotonic() - last[0] > idle: break
+            continue
+        try: msg, fds, _, _ = socket.recv_fds(c, 1 << 16, 3); req = json.loads(msg)
+        except Exception: c.close(); continue
+        if req.get('stop'):
+            c.sendall(struct.pack('<i', 0)); c.close(); [os.close(f) for f in fds]; stop.set(); break
+        if os.path.realpath(req['xclbin']) != os.path.realpath(xb) or req.get('device') != bdf or len(fds) != 3 or \
+           not busy.acquire(blocking=False):
+            c.sendall(struct.pack('<i', -1)); c.close(); [os.close(f) for f in fds]; continue
+        threading.Thread(target=job, args=(c, req, fds), daemon=True).start()
+    with busy: pass                                              # a running job finishes first
+    try: os.unlink(path)
+    except FileNotFoundError: pass
+    return 0
+
+
+def stop_all():
+    """stop every helper of this user (all cards)"""
+    d, u = sock_dir(), os.getuid()                               # (figz-<uid>.sock: an older figz's helper)
+    for p in glob.glob(os.path.join(d, 'figz-%d-*.sock' % u)) + glob.glob(os.path.join(d, 'figz-%d.sock' % u)):
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as c:
+                c.connect(p); socket.send_fds(c, [json.dumps({'stop': True}).encode()], [0, 1, 2])
+                c.recv(4, socket.MSG_WAITALL)
+        except OSError:
+            pass
+
+
+BUSY = 'busy'
+
+
+def via_daemon(argv, xb, bdf):
+    """-> the command's exit code from the card's helper, BUSY when it is busy (or has another xclbin), or None when
+    there is no usable helper"""
+    stop = False
+    req = json.dumps({'argv': argv, 'cwd': os.getcwd(), 'xclbin': xb, 'device': bdf, 'umask': os.umask(0o022)}).encode()
+    os.umask(json.loads(req)['umask'])
+    for attempt in range(2):
+        try:
+            c = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM); c.connect(sock_path(bdf))
+        except OSError:
+            if stop or attempt: return None
+            h = subprocess.Popen([sys.executable, os.path.realpath(__file__), '--daemon', '--xclbin', xb],
+                                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                 start_new_session=True, env=dict(os.environ, FIGZ_DEVICE=bdf))
+            for _ in range(200):                                 # attaching takes 0.3 s (seconds if it must load)
+                time.sleep(0.05)
+                if os.path.exists(sock_path(bdf)) or h.poll() is not None: break
+            continue
+        with c:
+            try:
+                socket.send_fds(c, [req], [0, 1, 2])
+                r = c.recv(4, socket.MSG_WAITALL)
+            except OSError:
+                return None
+            if len(r) != 4: return None
+            rc = struct.unpack('<i', r)[0]
+            return BUSY if rc == -1 else rc
+    return None
+
+
+def main():
+    argv = sys.argv[1:]
+    a = parser().parse_args(argv)
+    xb = os.path.realpath(a.xclbin or default_xclbin())
+    if a.daemon: return daemon(xb)
+    if a.stop:
+        stop_all(); return 0
+    if not (a.cpu or a.no_daemon or a.help or a.version or os.environ.get('FIGZ_DAEMON') == '0'):
+        try: bdfs = find_cards()
+        except RuntimeError: bdfs = []                           # no card: run() says so and uses the CPU
+        for bdf in bdfs:                                         # a busy card (or one whose helper cannot start,
+            rc = via_daemon(argv, xb, bdf)                       # e.g. another xclbin on it): try the next card
+            if rc is not BUSY and rc is not None: return rc
+    return run(argv)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,14 @@
+--- kernel/label_propagation_top.hpp
++++ kernel/label_propagation_top.hpp
+@@ -29,8 +29,9 @@
+ #define V 2
+ #define E 2
+ #else
+-#define V 800000
+-#define E 800000
++// innova2: host array sizes for AMD's hollywood benchmark (1,139,905 vertices, 57,515,616 edges; was 800000)
++#define V 1140000
++#define E 57600000
+ #endif
+ 
+ #define K 16

@@ -1,0 +1,117 @@
+version = 1
+SPDX-PackageName = "innova2_shell_examples"
+SPDX-PackageSupplier = "the innova2 contributors"
+SPDX-PackageDownloadLocation = "https://github.com/michalkouril/innova2_shell_examples"
+
+# Our files without a header (configs, docs, data lists, patches against Apache-2.0 Vitis Libraries)
+[[annotations]]
+path = [".gitignore", "README.md", "NOTICE", "LICENSE_AUDIT.md", "**/link.cfg", "**/conn.cfg", "**/README.md",
+        "examples/suite/examples.txt", "examples/vitislibs/benchmarks.txt", "examples/vitislibs/graphdata/tools/**", "fld_lite/e5/*.cfg", "fld_lite/e5/link.sh",
+        "fld_lite/e5/flowtest.cpp", "fld_lite/e5/udp_swap_tb.cpp", "fld_lite/e5/zuc/adapt_test.cpp",
+        "fld_lite/e5/zuc/host_check_test.cpp", "fld_lite/e5/zuc/sim_rtl/**/gen_check.py", "fld_lite/e5/zuc/sim_rtl/**.v",
+        "fld_lite/e5/zuc/sim_rtl/gen_check.py", "fld_lite/e5/zuc/sim_rtl/*.v", "xclbin/SHA256SUMS", "xclbin/MANIFEST.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors"]
+SPDX-License-Identifier = "Apache-2.0"
+
+# lp_csim.cpp re-composes the body of AMD's xf::graph::labelPropagation (Apache-2.0) with a dump per iteration
+# our patches to AMD Vitis Libraries files: their context lines are AMD's (Apache-2.0)
+[[annotations]]
+path = ["examples/compression/patches/**", "examples/vitislibs/host_patches/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2019-2023 Xilinx, Inc.", "2022-2023 Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["examples/vitislibs/graphdata/tools/lp_csim.cpp"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2019-2023 Xilinx, Inc.", "2022-2023 Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0"
+
+# AMD Vitis Libraries benchmark brought back from v2020.2 (kernel, host) with v2023.2 build files; our changes in its README
+[[annotations]]
+path = ["examples/vitislibs/overlay/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2019-2023 Xilinx, Inc.", "2022-2023 Advanced Micro Devices, Inc.", "2026 the innova2 contributors"]
+SPDX-License-Identifier = "Apache-2.0"
+
+# ZUC reference model / S-boxes derived from FlexDriver's flexdriver-zuc (BSD-2-Clause, Gabi Malka)
+[[annotations]]
+path = ["fld_lite/e5/zuc/zuc_sbox.h", "fld_lite/e5/zuc/sim_rtl/zuc_ref.py", "fld_lite/e5/zuc/sim_rtl/xsim4/zuc_ref.py",
+        "fld_lite/e5/zuc/sim_rtl/xsim4/hold/zuc_ref.py"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2020-2021 Gabi Malka"]
+SPDX-License-Identifier = "Apache-2.0 AND BSD-2-Clause"
+
+[[annotations]]
+path = ["fld_lite/e5/zuc/LICENSE.flexdriver-zuc"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2020-2021 Gabi Malka"]
+SPDX-License-Identifier = "BSD-2-Clause"
+
+[[annotations]]
+path = ["examples/memcached/kernels/pipeline_orig2015/**", "examples/memcached/kernels/pipeline/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2016 Xilinx, Inc."]
+SPDX-License-Identifier = "BSD-3-Clause"
+
+[[annotations]]
+path = ["examples/memcached/kernels/pipeline/globals.h", "examples/memcached/kernels/pipeline/valueStore/valueStore.cpp",
+        "examples/memcached/kernels/pipeline/valueStore/flashValueStore.cpp",
+        "examples/memcached/kernels/pipeline/hashTable/memWrite.cpp"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2016 Xilinx, Inc.", "2026 the innova2 contributors"]
+SPDX-License-Identifier = "BSD-3-Clause"
+
+# hls4ml output (model/convert.py): nnet_utils/ are hls4ml's templates; the model files and weights are generated from
+# our model, trained on the CC-BY-4.0 hls4ml_lhc_jets_hlf dataset (see NOTICE)
+[[annotations]]
+path = ["examples/hls4ml/kernel/firmware/nnet_utils/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["The hls4ml authors"]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["examples/hls4ml/kernel/firmware/*.h", "examples/hls4ml/kernel/firmware/*.cpp", "examples/hls4ml/kernel/firmware/weights/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "The hls4ml authors"]
+SPDX-License-Identifier = "Apache-2.0"
+
+# test vectors: the dataset's test split, quantised, with hls4ml's emulated outputs (model/make_jets.py)
+[[annotations]]
+path = ["examples/hls4ml/jets.bin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["Maurizio Pierini, Javier Duarte, Nhan Tran, Marat Freytsis, Vladimir Loncar (hls4ml_lhc_jets_hlf, doi:10.5281/zenodo.3602260)", "2026 the innova2 contributors"]
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# xclbins: our kernels + third-party kernel code (see NOTICE) + the AMD IP of the platform's dynamic region
+[[annotations]]
+path = ["xclbin/*.xclbin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0 AND LicenseRef-AMD-IP"
+
+[[annotations]]
+path = ["xclbin/lz4.xclbin", "xclbin/lz4x4.xclbin", "xclbin/lz4x8.xclbin", "xclbin/gzip.xclbin", "xclbin/gzip8.xclbin",
+        "xclbin/gzip_x4.xclbin", "xclbin/gunzip.xclbin", "xclbin/gzip_combo.xclbin", "xclbin/gzip_figz.xclbin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2019-2023 Xilinx, Inc.", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0 AND LicenseRef-AMD-IP"
+
+[[annotations]]
+path = ["xclbin/hls4ml.xclbin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "The hls4ml authors", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0 AND LicenseRef-AMD-IP"
+
+[[annotations]]
+path = ["xclbin/zuc.xclbin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2020-2021 Gabi Malka", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0 AND BSD-2-Clause AND LicenseRef-AMD-IP"
+
+[[annotations]]
+path = ["xclbin/memcached.xclbin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2016 Xilinx, Inc.", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0 AND BSD-3-Clause AND LicenseRef-AMD-IP"

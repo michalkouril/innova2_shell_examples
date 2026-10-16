@@ -1,0 +1,54 @@
+# benchmark (path in Vitis_Libraries)   [data]   [args=<host arguments>]
+# 'data': fetch.sh also checks out the benchmark's data/ directory (excluded by default; some are large).
+# 'args=': the rest of the line replaces description.json's launch arguments in run.sh (same BUILD / PROJECT /
+# LIB_DIR substitution); used to run at the input size AMD's published numbers were measured with.
+# A path under overlay/ is our own benchmark directory (see build.sh); '#' starts a comment.
+# Active lines: built and passing on the Innova-2 (inn2x r10, platform innova2_innova2_xdma_202320_4), 2026-10-16/17;
+# results in README.md. Commented lines: tried, and why they are not here (measured; the region leaves kernels
+# 32 URAM, ~300K LUTs, bank0 with 15 masters -- see uram_check.py).
+
+security/L1/benchmarks/crc32                               args=-xclbin BUILD/CRC32Kernel.xclbin -data PROJECT/test.dat -num 32768
+security/L1/benchmarks/adler32                             data args=-xclbin BUILD/Adler32Kernel.xclbin -data PROJECT/data/test.dat -num 32768
+security/L1/benchmarks/aes256CbcDecrypt                    data args=-mode fpga -xclbin BUILD/aes256CbcDecryptKernel.xclbin -len 1024 -num 32768 -gld PROJECT/data/gld.dat
+security/L1/benchmarks/aes256CbcDecrypt_4pu                # overlay/: the v2020.2 4-PU kernel of the published figure
+codec/L2/demos/jpegDec_fix                                 # overlay/: jpegDec with copyInfo fixed (see README)
+codec/L2/demos/resize                                      # its host checks nothing: run check_resize.sh
+data_compression/L2/demos/zstd_decompress                  data   # hangs on zstd -19 streams: use zstd_decompress_fix
+data_compression/L2/demos/zstd_decompress_fix              # overlay/: three decoder fixes (see its README)
+data_compression/L2/demos/lz4_streaming                    data
+data_compression/L2/demos/snappy_streaming                 data   # decompression > 64 KB hangs: use snappy_streaming_fix
+data_compression/L2/demos/snappy_streaming_fix             # overlay/: chunk-header loop restructured (see its README)
+database/L1/benchmarks/compound_sort
+graph/L2/benchmarks/label_propagation                      data
+graph/L2/benchmarks/triangle_count                         data
+graph/L2/benchmarks/maximal_independent_set                data
+graph/L2/benchmarks/shortest_path_float_pred               data
+graph/L2/benchmarks/twoHop                                 data
+quantitative_finance/L1/benchmarks/SVD
+quantitative_finance/L2/demos/Quadrature
+solver/L2/benchmarks/gesvdj                                # 16x16 only: AMD's 512x512 needs 128 URAM
+solver/L2/benchmarks/gtsv                                  # 16x16 only: see gtsv_1024 below
+
+# codec/L2/demos/jpegDec                                   # hardware writes no axi_height/axi_width: use jpegDec_fix
+# data_analytics/L2/benchmarks/classification/naive_bayes  # URAM 256 (HLS) / 128 (synth) > 32, BRAM 1137 RAMB36 > 792
+# data_analytics/L2/demos/text/dup_match                   # 2 CUs x 9 ports = 18 masters > bank0's 15
+# data_compression/L2/demos/snappy                         # URAM 50 > 32
+# database/L1/benchmarks/hash_anti_join                    # masters > bank0's 15
+# database/L1/benchmarks/hash_group_aggregate              # BRAM over the region; a reset BUFG the region cannot hold
+# database/L1/benchmarks/hash_join_v2                      # URAM 64 > 32
+# database/L1/benchmarks/hash_multi_join                   # masters > bank0's 15
+# database/L1/benchmarks/hash_semi_join                    # URAM > 32
+# graph/L2/benchmarks/connected_component                  # URAM ~112 > 32
+# graph/L2/benchmarks/strongly_connected_component         # masters > bank0's 15
+# graph/L2/benchmarks/merge                                # URAM ~128 > 32
+# graph/L2/benchmarks/renumber                             # BRAM over the region
+# quantitative_finance/L2/benchmarks/MCAmericanEngineMultiKernel   # ~480K LUTs > the region (placement DRC)
+# quantitative_finance/L2/benchmarks/TreeEngine/TreeCallableEngineHWModel   # 344K HLS / 329K synth LUTs: placement fails
+# quantitative_finance/L2/benchmarks/TreeEngine/TreeCapFloorEngineHWModel   # 385K HLS LUTs: placement fails
+# quantitative_finance/L2/benchmarks/TreeEngine/TreeSwapEngineHWModel       # 423K HLS LUTs: placement fails
+# quantitative_finance/L2/benchmarks/TreeEngine/TreeSwaption*Model           # not built: same engine, >= the above
+# solver/L2/benchmarks/gtsv_1024                           # overlay/: AMD's 1024 / 16 CUs -- does not route (WNS -6 ns)
+# security/L1/benchmarks/aes256CbcDecrypt_sc               # system compiler: builds; its host needs XRT's legacy xcl* API
+# codec/L2/demos/jpegDec_sc                                # system compiler: builds; host needs the legacy xcl* API
+# codec/L2/demos/resize_sc, database/L1/benchmarks/hash_join_v3_sc, hash_join_v4_sc, solver/L2/benchmarks/gesvdj_sc
+#                                                          # system compiler: not run (same host limitation)

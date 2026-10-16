@@ -1,0 +1,11 @@
+--- a/common/libs/compress/compressApp.cpp
++++ b/common/libs/compress/compressApp.cpp
+@@ -291,7 +291,7 @@
+     double input_size = m_inputsize;
+     std::vector<uint8_t> in(m_inputsize);
+     std::vector<uint8_t> out;
+-    uint8_t mcr = std::stoi(m_mcr);
++    uint32_t mcr = std::stoi(m_mcr);   // innova2: was uint8_t, which wrapped any -mcr above 255
+     out.reserve(mcr * m_inputsize);
+ 
+     inFile.read((char*)in.data(), m_inputsize);

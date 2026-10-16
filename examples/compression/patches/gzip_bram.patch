@@ -1,0 +1,46 @@
+--- a/lz_compress.hpp
++++ b/lz_compress.hpp
+@@ -205,7 +205,7 @@
+ #endif
+ 
+     uintDictV_t dict[LZ_DICT_SIZE];
+-#pragma HLS RESOURCE variable = dict core = XPM_MEMORY uram
++#pragma HLS BIND_STORAGE variable = dict type = RAM_T2P impl = BRAM
+ 
+     // local buffers for each block
+     uint8_t present_window[MATCH_LEN];
+--- a/zlib_compress.hpp
++++ b/zlib_compress.hpp
+@@ -193,8 +193,8 @@
+ #pragma HLS BIND_STORAGE variable = lz77PassStream type = FIFO impl = BRAM
+ 
+     if (BLOCK_SIZE_IN_KB >= 32) {
+-#pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = URAM
+-#pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = URAM
++#pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = BRAM
++#pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = BRAM
+     } else {
+ #pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = BRAM
+ #pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = BRAM
+@@ -328,8 +328,8 @@
+ #pragma HLS STREAM variable = blckEosStream depth = c_blckEosDepth
+ 
+     if (BLOCK_SIZE_IN_KB >= 32) {
+-#pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = URAM
+-#pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = URAM
++#pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = BRAM
++#pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = BRAM
+     } else {
+ #pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = BRAM
+ #pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = BRAM
+@@ -478,8 +478,8 @@
+ 
+     // URAM buffering used only for Octa-core designs
+     if (BLOCK_SIZE_IN_KB >= 32) {
+-#pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = URAM
+-#pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = URAM
++#pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = BRAM
++#pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = BRAM
+     } else {
+ #pragma HLS BIND_STORAGE variable = distStream type = FIFO impl = BRAM
+ #pragma HLS BIND_STORAGE variable = mergeStream type = FIFO impl = BRAM
