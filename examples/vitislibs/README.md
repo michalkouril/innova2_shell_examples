@@ -31,6 +31,11 @@ bash examples/vitislibs/run.sh <copy>/Vitis_Libraries          # PASS / FAIL per
 `run.sh` uses `args=` from `benchmarks.txt` where AMD's figure needs a bigger input than the default, and runs without
 the benchmarks' `xrt.ini` profiling options (they crash XRT 2.27 at exit). `check_resize.sh` checks resize's output.
 
+**Python hosts instead** (`py/`, 2026-10-17): one pyxrt script per benchmark, so the card's host needs only the xclbins,
+python3, numpy and XRT -- no checkout, no compiler, no AMD data. `bash py/run_py.sh <root>` runs all of them on a tree
+of prebuilt xclbins; py/README.md has what each checks and its results next to the C++ hosts' (21/21 PASS, the same
+numbers within a few per cent).
+
 ## Results (hpy440, Xeon E5-1603 v4, inn2x r10, XRT 2.27; 2026-10-16/17)
 
 Clock = the data clock v++ chose (the platform asks for 300 MHz). Every run below passed its host's check; where the
@@ -85,3 +90,9 @@ count from `TC_GOLDEN` (default 11, the bundled graph's).
   that is never true, an extra literal read after a block with no literals, a 32 KB history for a 32 KB window), all
   reproducible in C simulation; snappy's source is correct, but the RTL HLS 2023.2 makes of its chunk-header loop starts
   every chunk after the first one word early (found in RTL co-simulation), and the overlay restructures that loop.
+* Found while writing the Python hosts (py/README.md): zstd_decompress (stock and `_fix`) decodes one stream per xclbin
+  load -- the next stream hangs the CU, with AMD's C++ host too; snappy_streaming with 4 MB blocks writes a wrong
+  uncompressed-length preamble in every block (AMD's decompressor ignores it, standard decoders reject the stream);
+  shortest_path_float_pred returns distances up to 82 % too long on weighted multigraphs (duplicate edges / self-loops;
+  simple graphs and unit weights are exact); maximal_independent_set keeps its write position across runs, so a
+  second run in the same xclbin load writes after the first.

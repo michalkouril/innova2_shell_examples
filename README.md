@@ -19,8 +19,8 @@ a card; the table gives the result of that run (see "Results").
 | `examples/hostmem` | a kernel reading and writing host RAM through the shell's peer window | hostmem_probe |
 | `examples/rsa` | RSA-2048 signing: CRT halves as 1024-bit modular exponentiations on 9 engines, every signature verified on the host (pyxrt, no host build) | rsa_modexp |
 | `tools/figz` | **`figz`**, used like `gzip`, compressing and decompressing on the card (Python, no build step) | the `gzip_figz` xclbin (or `gzip_combo`) |
-| `examples/suite` | 20 examples from AMD Vitis_Accel_Examples, re-pinned to this card's memory | (upstream) |
-| `examples/vitislibs` | 21 AMD Vitis Libraries benchmarks (3 with our fixes to AMD bugs: jpegDec, zstd, snappy) built with their own Makefiles and compared with AMD's published numbers (crc32, adler32, AES, resize, jpegDec, LZ4/zstd/snappy, compound sort, 5 graph algorithms on SuiteSparse graphs, SVD, quadrature, solvers); results and the ones that do not fit in `examples/vitislibs/README.md`; no xclbins in `xclbin/` | (upstream) |
+| `examples/suite` | 20 examples from AMD Vitis_Accel_Examples, re-pinned to this card's memory; AMD's C++ hosts, or Python (pyxrt) ports of them in `py/` | (upstream) |
+| `examples/vitislibs` | 21 AMD Vitis Libraries benchmarks (3 with our fixes to AMD bugs: jpegDec, zstd, snappy) built with their own Makefiles (C++ hosts, or the Python (pyxrt) hosts in `py/`) and compared with AMD's published numbers (crc32, adler32, AES, resize, jpegDec, LZ4/zstd/snappy, compound sort, 5 graph algorithms on SuiteSparse graphs, SVD, quadrature, solvers); results and the ones that do not fit in `examples/vitislibs/README.md`; no xclbins in `xclbin/` | (upstream) |
 
 `fld_lite/` holds what the network examples share: the FLD-lite kernels (`e5/fld_lite.cpp`), the generator / checker
 (`e5/gen`), UDP (`e5/udp_lite.cpp`), the ZUC AFU (`e5/zuc`), the host programs (`e5/*_host.cpp`) with their DevX
@@ -92,7 +92,7 @@ Data clock = the frequency v++ chose for the kernels (the platform asks for 300 
 | rsa | 213 MHz | 1,100 RSA-2048 signatures × 10 rounds, all verified on the host (0 failing); 7,526 signatures/s (one signature 2.44 ms); the host CPU, `openssl speed -multi 4`: 5,448/s |
 | compression | lz4 300, lz4x4 297, lz4x8 281, gzip 300, gzip8 249, gzip_x4 244, gunzip 278, gzip_combo 258 MHz | 28 OK, 0 FAIL, 2 SKIP: zeros through the decompressor -- a known limitation of AMD's `gzip_decompress_mm`: for a stream compressed more than roughly 100-300:1 (`gzip -6` of zeros is ~1000:1) it returns 0 bytes and its host reports success; every output checked with `lz4 -d` / `gzip -d` and compared. Compress, text: lz4 572 / lz4x4 1115 / lz4x8 1995 MB/s, gzip 588 / gzip8 1880 / gzip_x4 1816 / gzip_combo 1959 MB/s; decompress `gzip -6` text: gunzip 1172 MB/s |
 | figz | gzip_figz 205 MHz | `tools/figz/test_figz.sh`: 48 OK, 0 FAIL |
-| suite | (per example) | 20 / 20 TEST PASSED, rc 0 (run 2026-10-16 with `examples/suite/run.sh`; its xclbins are built by the suite, not in `xclbin/`) |
+| suite | (per example) | 20 / 20 TEST PASSED, rc 0 (run 2026-10-16 with `examples/suite/run.sh`; its xclbins are built by the suite, not in `xclbin/`); the Python hosts (`examples/suite/py/run_py.sh`, 2026-10-17): 20 / 20 PASS on the same xclbins |
 
 ## Licences
 

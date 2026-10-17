@@ -35,6 +35,7 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `common/card_env.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `common/link_gate.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `common/net_lib.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `common/pyxrt_util.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/compression/fetch_vitis_libs.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/compression/gunzip/build.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/compression/gunzip/conn.cfg` | Ours | — (REUSE.toml) |
@@ -249,6 +250,29 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/suite/gen_cfg.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/suite/mem_check.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/suite/prep_cfg.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/suite/py/README.md` | Ours | — (REUSE.toml) |
+| `examples/suite/py/hello_world.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_asynchronous_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_copy_buffer_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_data_transfer_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_kernel_chain.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_mailbox_auto_restart_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_mult_compute_units_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_streaming_free_running_k2k_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/host_xrt_streaming_k2k_mm_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/performance_axi_burst_performance.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/performance_iops_test_xrt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_adder_streams.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_streaming_free_running_k2k.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_streaming_k2k_mm.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_vadd_2clks.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_vadd_2kernels.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_vadd_hw_debug.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/rtl_kernels_rtl_vadd_mixed_c_vadd.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/run_py.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/suite/py/suite_lib.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/suite/py/sys_opt_kernel_swap.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
+| `examples/suite/py/sys_opt_multiple_process.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: 2019-2021 Xilinx, Inc.; SPDX-Li |
 | `examples/suite/rtl_ports.map` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/suite/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/README.md` | Ours | — (REUSE.toml) |
@@ -338,6 +362,31 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/vitislibs/overlay/solver/L2/benchmarks/gtsv_1024/utils.mk` | AMD Vitis Libraries, Apache-2.0 | Copyright (C) 2019-2022, Xilinx, Inc.; Copyright (C) 2022-2023, Advanced Micro Devices, Inc.; Licensed under t |
 | `examples/vitislibs/pin_cfg.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/pin_host.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/vitislibs/py/Quadrature.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/README.md` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/vitislibs/py/SVD.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/adler32.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/aes256CbcDecrypt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/aes256CbcDecrypt_4pu.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/compound_sort.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/crc32.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/gesvdj.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/graph_common.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/gtsv.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/jpegDec_fix.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/label_propagation.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/lz4_streaming.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/maximal_independent_set.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/resize.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/run_py.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/vitislibs/py/shortest_path_float_pred.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/snappy_streaming.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/snappy_streaming_fix.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/triangle_count.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/twoHop.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/vl_stream.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/zstd_decompress.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
+| `examples/vitislibs/py/zstd_decompress_fix.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/sp_fill.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/uram_check.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
@@ -476,7 +525,7 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 ## Classes
 
 * **Licence text** (9 files): Verbatim licence texts (SPDX licence list) and our LicenseRef explanation.
-* **Ours** (202 files): Written in this project: Apache-2.0, (c) 2026 the innova2 contributors (SPDX header or REUSE.toml).
+* **Ours** (208 files): Written in this project: Apache-2.0, (c) 2026 the innova2 contributors (SPDX header or REUSE.toml).
 * **Ours, GPL-2.0-only** (4 files): Our Linux kernel modules (SPDX tag in the file).
 * **Ours, generated data** (18 files): Produced by our scripts from our own model or measurements (weights, checksums, manifests).
 * **Ours, with Mellanox-derived macros** (2 files): prm.h: accessor macros following Mellanox include/linux/mlx5/device.h (dual GPL-2.0 / OpenIB BSD), used under Linux-OpenIB.
@@ -484,6 +533,7 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 * **Xilinx HLx memcached, BSD-3-Clause** (62 files): Xilinx 2016 memcached pipeline: pipeline_orig2015 as published, pipeline/ with our marked changes.
 * **AMD Vitis Libraries, Apache-2.0** (58 files): Copies of AMD benchmark directories (unmodified, or changed and marked so); keep the Apache headers.
 * **Ours, patches to AMD Apache-2.0 files** (10 files): Our changes to Vitis Libraries files; context lines are AMD's (Apache-2.0).
+* **Ours, Python port of an AMD host, Apache-2.0** (43 files): pyxrt host translated from AMD's C++ host (Vitis Libraries / Vitis_Accel_Examples host files: Apache-2.0, Xilinx / AMD); both copyrights in the header.
 * **Ours + AMD Apache-2.0 code** (3 files): Our tool that contains or includes AMD Vitis Libraries kernel code (Apache-2.0).
 * **hls4ml (generated / templates), Apache-2.0** (53 files): Output of hls4ml from our model; nnet_utils are hls4ml's templates.
 * **Dataset derivative, CC-BY-4.0** (1 files): Derived from the hls4ml_lhc_jets_hlf dataset (attribution in NOTICE).
