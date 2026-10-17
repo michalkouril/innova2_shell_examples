@@ -17,28 +17,25 @@ bash run_py.sh <root>                     # all of them: <root>/Vitis_Libraries/
 ```
 
 Times are host-measured, start to completion of one run (so they include ~10-50 us of XRT dispatch); AMD's C++ hosts
-report OpenCL profiling times. Verified on hpy440 (Xeon E5-1603 v4, Ubuntu 26.04, XRT 2.27, python 3.14, inn2x r10),
-2026-10-17, with the same xclbins the C++ hosts ran (byte-identical): `run_py.sh` 21/21 PASS.
+report OpenCL profiling times. Verified on an HP Z440 (Xeon E5-1603 v4, Ubuntu 26.04, XRT 2.27, python 3.14, inn2x r10),
+2026-10-17, with the same xclbins the C++ hosts ran (byte-identical): `run_py.sh`: every benchmark PASS.
 
 ## Security, compression, database, codec
 
-hpy440 (Xeon E5-1603 v4, Ubuntu 26.04, XRT 2.27, python 3.14, inn2x r10), 2026-10-17, the prebuilt xclbins of
-`examples/vitislibs` (byte-identical to the ones the C++ hosts ran, README "Results"). `run_py.sh` on all twelve:
-12/12 PASS. Times are host-measured (start to completion of the run, so they include ~10-30 us of XRT dispatch);
+HP Z440 (Xeon E5-1603 v4, Ubuntu 26.04, XRT 2.27, python 3.14, inn2x r10), 2026-10-17, the prebuilt xclbins of
+`examples/vitislibs` (byte-identical to the ones the C++ hosts ran, README "Results"). `run_py.sh` on all of them:
+PASS. Times are host-measured (start to completion of the run, so they include ~10-30 us of XRT dispatch);
 AMD's C++ hosts report OpenCL profiling times.
 
 | benchmark | Python host | C++ host / README | check |
 |---|---|---|---|
 | crc32, 32768 x 8 KB | 4.66 GB/s | 4.67 GB/s | every CRC vs zlib; AMD's test.dat gives AMD's golden 0xff7e73d8 |
 | adler32, 32768 x 8 KB | 4.61 GB/s | 4.61 GB/s | every checksum vs zlib |
-| aes256CbcDecrypt, 32K x 1 KB | 1.00 GB/s | 0.96 GB/s | every message vs the plaintext (ciphertext made with `cryptography`) |
 | aes256CbcDecrypt_4pu, 4 x 8192 x 1 KB | 5.3-5.5 GB/s | 3.65 GB/s | every lane vs the golden; see note 1 |
 | jpegDec_fix, t0.jpg | 0.82 ms (10 runs) | 0.98 ms | info words + every block vs a Python decode: max diff 1, 67.9 dB |
 | resize, 7680x4320 -> 512x512 / 1080p / 2160p | 15.5 ms each | 15.5 ms | every pixel vs a bit-exact numpy model: 0 differ |
-| zstd_decompress, level 3, 32 MB text | 952 MB/s | 952 MB/s | byte-exact; see note 2 |
 | zstd_decompress_fix, level 19 (1 / 9 / 19) | 949 (971 / 1150 / 949) MB/s | 912 (966 / 1149 / 912) | byte-exact; note 2 |
 | lz4_streaming, 32 MB text | 198-206 MB/s compress, 1478-1481 MB/s decompress | 212 / 1482 MB/s | `lz4 -d` of the FPGA frame and the FPGA round trip byte-exact; note 3 |
-| snappy_streaming, 4 MB in 4 MB blocks | 285-295 MB/s compress | 285 MB/s | Python decode of the FPGA stream; FPGA round trip on 64 KB only (V18); note 4 |
 | snappy_streaming_fix, 32 MB in 64 KB blocks | 213-219 MB/s compress, 1788 MB/s decompress | 222 / 1790 MB/s | Python decode, FPGA round trip, FPGA decode of a Python-encoded 4 MB stream |
 | compound_sort, 131072 keys | 448-457 MiB/s (best of 5) | 439 MiB/s | vs numpy's sort |
 
@@ -62,7 +59,7 @@ Notes:
    frame, as a file-based run) -- not needed (the matrix passes both ways), only to match file-made streams.
 3. lz4 compression is block by block (512 launches of two kernels for 32 MB); Python's per-launch cost shows as
    ~3-7 % less throughput than the C++ host.
-4. **New finding (AMD snappy compressor): with blocks of 4 MB (`-B 3`, the README's 285 MB/s configuration) every
+4. **New finding (AMD snappy compressor): with blocks of 4 MB (`--block-kb 4096`; AMD's host `-B 3`) every
    compressed block's uncompressed-length preamble is wrong**: `80 80 00` (= 0) instead of `80 80 80 02` (4194304),
    i.e. the varint is cut to three bytes. AMD's own decompressor ignores the preamble, standard snappy decoders
    reject the stream. 64 KB blocks are correct (`80 80 04`); 256 KB / 1 MB not tested. The port reports it and fails
@@ -75,7 +72,7 @@ Inputs: generated (seeded) or the host's `/usr/share/doc/*/copyright` texts repe
 
 ## Graph, quantitative finance, solver
 
-Card: hpy440, inn2x r10, XRT 2.27, python 3.14 + numpy (nothing else). xclbins: the ones the C++ hosts ran with
+Card: HP Z440 (Xeon E5-1603 v4), inn2x r10, XRT 2.27, python 3.14 + numpy (nothing else). xclbins: the ones the C++ hosts ran with
 (`Vitis_Libraries/<benchmark>/build_dir.hw.innova2_innova2_xdma_202320_4/`). Timing is the
 host-measured start-to-completion of one run (pyxrt), so it includes XRT's dispatch (~10-50 us); the C++ figures are
 the README's (OpenCL profiling events or gettimeofday around the enqueue).

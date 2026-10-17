@@ -20,7 +20,7 @@ xclbin/SHA256SUMS` from the repository root. Data clock = the kernel clock v++ s
 | `lz4.xclbin` | `examples/compression/lz4` | 300 MHz | 28.4 MB | `19e583525cf58c45` |
 | `lz4x4.xclbin` | `examples/compression/lz4x4` | 297 MHz | 30.8 MB | `5f82fa94caebadf2` |
 | `lz4x8.xclbin` | `examples/compression/lz4x8` | 281 MHz | 32.7 MB | `2b738b4ae8358fca` |
-| `memcached.xclbin` | `examples/memcached` | 300 MHz | 33.0 MB | `e33cb5a89ee76781` |
+| `memcached.xclbin` | `examples/memcached` | 300 MHz | 31.1 MB | `b122af89e432e86f` |
 | `ntp.xclbin` | `examples/ntp` | 300 MHz | 29.6 MB | `99bb07adb1beec1c` |
 | `rsa.xclbin` | `examples/rsa` | 213 MHz | 35.7 MB | `ad88946313cf9ac9` |
 | `zuc.xclbin` | `examples/zuc` | 227 MHz | 36.6 MB | `782706d3f7602fb9` |

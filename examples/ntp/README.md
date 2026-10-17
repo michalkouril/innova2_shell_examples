@@ -46,7 +46,7 @@ v4 / v3 replies byte-exact against a reference, 10 kinds of frame dropped into t
 
 ## Results
 
-Run of 2026-10-17 on hpy440 (Xeon E5-1603 v4, inn2x r10, XRT 2.27), `xclbin/ntp.xclbin` (data clock 300 MHz, link
+Run of 2026-10-17 on an HP Z440 (Xeon E5-1603 v4, inn2x r10, XRT 2.27), `xclbin/ntp.xclbin` (data clock 300 MHz, link
 WNS +0.004 ns). The host's own clock was not synchronised (no NTP source on that network), so the server ran with
 `--local-stratum 10`, refid `LOCL`.
 

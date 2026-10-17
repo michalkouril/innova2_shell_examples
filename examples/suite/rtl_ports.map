@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # RTL kernels' memory arguments, by example (prep_cfg.py only reads HLS C/C++ sources, so an RTL kernel's m_axi ports
 # were never pinned and v++ put them on the platform's default memory -- HOST on route V, where the kernels then wrote
-# nowhere the host reads: rtl_adder_streams / rtl_vadd_2clks "Result mismatch, Device result = 0" on hpz440, 2026-10-08).
+# nowhere the host reads: rtl_adder_streams / rtl_vadd_2clks "Result mismatch, Device result = 0" on an HP Z440 (Xeon E5-1620 v3), 2026-10-08).
 # Derived from each xclbin's EMBEDDED_METADATA (arg names) + CONNECTIVITY. Pinned to VMEM's first memory.
 # example            cu.arg
 rtl_adder_streams    krnl_input_stage_rtl_1.input_r

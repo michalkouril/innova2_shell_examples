@@ -186,40 +186,6 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/memcached/kernels/pipeline/statsCollectorIn.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
 | `examples/memcached/kernels/pipeline/valueStore/flashValueStore.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
 | `examples/memcached/kernels/pipeline/valueStore/valueStore.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/memcachedPipeline_tbHLS_README.txt` | Xilinx HLx memcached, BSD-3-Clause | — (REUSE.toml) |
-| `examples/memcached/kernels/pipeline_orig2015/pkt.in.txt` | Xilinx HLx memcached, BSD-3-Clause | — (REUSE.toml) |
-| `examples/memcached/kernels/pipeline_orig2015/run_hls.dramModel.tcl` | Xilinx HLx memcached, BSD-3-Clause | — (REUSE.toml) |
-| `examples/memcached/kernels/pipeline_orig2015/run_hls.dummyPCIeJoint.tcl` | Xilinx HLx memcached, BSD-3-Clause | — (REUSE.toml) |
-| `examples/memcached/kernels/pipeline_orig2015/run_hls.flashModel.tcl` | Xilinx HLx memcached, BSD-3-Clause | — (REUSE.toml) |
-| `examples/memcached/kernels/pipeline_orig2015/run_hls.memcachedPipeline.tcl` | Xilinx HLx memcached, BSD-3-Clause | — (REUSE.toml) |
-| `examples/memcached/kernels/pipeline_orig2015/sources/globals.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/globals.h` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/cc.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/compare.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/hash.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/hashTable.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/hashTableWithProfiler.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/memRead.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/memWrite.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/hashTable/memWriteWithProfiler.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/kvsPipelineHostMem.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/memcachedPipeline.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/memcachedPipeline_tb.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/merger.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/otherModules/dramModel/dramModel.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/otherModules/dramModel/dramModel.h` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/otherModules/dummyPCIeAddressAllocation/dummyPCIeJoint.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/otherModules/dummyPCIeAddressAllocation/globals.h` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/otherModules/flashModel/flashModel.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/otherModules/flashModel/flashModel.h` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/requestParser/requestParser.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/responseFormatter/asciiResponse.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/responseFormatter/binResponse.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/responseFormatter/responseFormatter.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/splitter.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/statsCollectorIn.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/valueStore/flashValueStore.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
-| `examples/memcached/kernels/pipeline_orig2015/sources/valueStore/valueStore.cpp` | Xilinx HLx memcached, BSD-3-Clause | Copyright (c) 2016, Xilinx, Inc.; copyright notice,; copyright holder nor the names of its contributors; COPYR |
 | `examples/memcached/link.cfg` | Ours | — (REUSE.toml) |
 | `examples/memcached/mcd_client.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/memcached/mcd_load.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
@@ -366,7 +332,6 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/vitislibs/py/README.md` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/py/SVD.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/adler32.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
-| `examples/vitislibs/py/aes256CbcDecrypt.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/aes256CbcDecrypt_4pu.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/compound_sort.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/crc32.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
@@ -380,12 +345,10 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/vitislibs/py/resize.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/run_py.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/py/shortest_path_float_pred.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
-| `examples/vitislibs/py/snappy_streaming.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/snappy_streaming_fix.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/triangle_count.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/twoHop.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/vl_stream.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
-| `examples/vitislibs/py/zstd_decompress.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/py/zstd_decompress_fix.py` | Ours, Python port of an AMD host, Apache-2.0 | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Advanced Micro Devices, Inc.; S |
 | `examples/vitislibs/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/vitislibs/sp_fill.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
@@ -394,85 +357,41 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/zuc/link.cfg` | Ours | — (REUSE.toml) |
 | `examples/zuc/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/README.md` | Ours | — (REUSE.toml) |
-| `fld_lite/e1/Makefile` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e1/devx_sq.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e1/devx_sq.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e1/e1_sq.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e1/prm.h` | Ours, with Mellanox-derived macros | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Mellanox Technologies Ltd.; SPD |
-| `fld_lite/e2/Makefile` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e2/Makefile.host` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e2/devx_rx.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e2/devx_rx.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e2/e2_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e2/e2_rx.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e2/e2_rx3.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/Makefile.host` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/devx_cq.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/devx_cq.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo2.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo3.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo4.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo5.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo6.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_echo_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e3_tx.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/e5_ticker.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e3/host_echo.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_cq.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_cq.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_rx.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_rx.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_rx_s0.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_rx_s0.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_sq.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/devx_sq.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `fld_lite/devx/prm.h` | Ours, with Mellanox-derived macros | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Mellanox Technologies Ltd.; SPD |
 | `fld_lite/e5/Makefile.host` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e5/e52_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/e5_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/e5gen_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/e5udp_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/fld_lite.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/fld_lite_hls.tcl` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e5/fld_lite_lat1.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e5/flowtest.cpp` | Ours | — (REUSE.toml) |
 | `fld_lite/e5/gen/gen_sim.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/gen/gen_sink.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e5/link.sh` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/link_fld_gen.cfg` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/link_zuc_gen.cfg` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/s1_client.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/sim/burst_maxi_mt.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/sim/fld_sim.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e5/udp_lat_client.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/udp_lite.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/udp_swap.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/udp_swap_tb.cpp` | Ours | — (REUSE.toml) |
 | `fld_lite/e5/zuc/LICENSE.flexdriver-zuc` | Licence text | Copyright (c) 2020-2021 Gabi Malka; copyright notice, this; copyright notice,; COPYRIGHT HOLDERS AND CONTRIBUT |
 | `fld_lite/e5/zuc/adapt_test.cpp` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/host_check_test.cpp` | Ours | — (REUSE.toml) |
 | `fld_lite/e5/zuc/package_zuc_k.tcl` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/e5/zuc/rtl/zuc_afu.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
-| `fld_lite/e5/zuc/rtl/zuc_core.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
-| `fld_lite/e5/zuc/rtl/zuc_histo.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
-| `fld_lite/e5/zuc/rtl/zuc_ip_synth.v` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: BSD-2-Clause |
-| `fld_lite/e5/zuc/rtl/zuc_k.v` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: BSD-2-Clause |
-| `fld_lite/e5/zuc/rtl/zuc_k200.v` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: BSD-2-Clause |
-| `fld_lite/e5/zuc/rtl/zuc_module.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
-| `fld_lite/e5/zuc/rtl/zuc_module_wrapper.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
-| `fld_lite/e5/zuc/rtl/zuc_params.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/rtl4/zuc_afu.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/rtl4/zuc_core.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/rtl4/zuc_histo.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/rtl4/zuc_ip_synth.v` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: BSD-2-Clause |
 | `fld_lite/e5/zuc/rtl4/zuc_k.v` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: BSD-2-Clause |
-| `fld_lite/e5/zuc/rtl4/zuc_k200.v` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: BSD-2-Clause |
 | `fld_lite/e5/zuc/rtl4/zuc_module.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/rtl4/zuc_module_wrapper.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/rtl4/zuc_params.v` | FlexDriver ZUC AFU, BSD-2-Clause | Copyright (c) 2021 Gabi Malka.; Licensed under the 2-clause BSD license, see LICENSE for details; SPDX-License |
 | `fld_lite/e5/zuc/sim_rtl/gen_check.py` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/tb_k.v` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/tb_k200.v` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/gen_check.py` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/hold/gen_check.py` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/hold/zuc_ref.py` | FlexDriver ZUC AFU, BSD-2-Clause | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/tb_k200.v` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/tb_k250.v` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/tb_k250_hold.v` | Ours | — (REUSE.toml) |
-| `fld_lite/e5/zuc/sim_rtl/xsim4/zuc_ref.py` | FlexDriver ZUC AFU, BSD-2-Clause | — (REUSE.toml) |
+| `fld_lite/e5/zuc/sim_rtl/tb_k250.v` | Ours | — (REUSE.toml) |
 | `fld_lite/e5/zuc/sim_rtl/zuc_ref.py` | FlexDriver ZUC AFU, BSD-2-Clause | — (REUSE.toml) |
 | `fld_lite/e5/zuc/zuc_adapt.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/e5/zuc/zuc_model.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
@@ -491,14 +410,6 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `fld_lite/lat/lat_host.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/lat/lat_probe.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `fld_lite/lat/lat_probe_l1.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/Makefile` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/devx_cq.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/devx_rx_s0.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/devx_rx_s0.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/devx_sq.c` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/devx_sq.h` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/nicq.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `fld_lite/s0/prm.h` | Ours, with Mellanox-derived macros | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-FileCopyrightText: Mellanox Technologies Ltd.; SPD |
 | `tools/figz/README.md` | Ours | — (REUSE.toml) |
 | `tools/figz/figz` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `tools/figz/test_figz.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0; copyright files),  |
@@ -525,15 +436,15 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 ## Classes
 
 * **Licence text** (9 files): Verbatim licence texts (SPDX licence list) and our LicenseRef explanation.
-* **Ours** (208 files): Written in this project: Apache-2.0, (c) 2026 the innova2 contributors (SPDX header or REUSE.toml).
+* **Ours** (165 files): Written in this project: Apache-2.0, (c) 2026 the innova2 contributors (SPDX header or REUSE.toml).
 * **Ours, GPL-2.0-only** (4 files): Our Linux kernel modules (SPDX tag in the file).
 * **Ours, generated data** (18 files): Produced by our scripts from our own model or measurements (weights, checksums, manifests).
-* **Ours, with Mellanox-derived macros** (2 files): prm.h: accessor macros following Mellanox include/linux/mlx5/device.h (dual GPL-2.0 / OpenIB BSD), used under Linux-OpenIB.
-* **FlexDriver ZUC AFU, BSD-2-Clause** (16 files): Gabi Malka's flexdriver-zuc RTL (as published or wrapped by us); keep the BSD-2 notice.
-* **Xilinx HLx memcached, BSD-3-Clause** (62 files): Xilinx 2016 memcached pipeline: pipeline_orig2015 as published, pipeline/ with our marked changes.
+* **Ours, with Mellanox-derived macros** (1 files): prm.h: accessor macros following Mellanox include/linux/mlx5/device.h (dual GPL-2.0 / OpenIB BSD), used under Linux-OpenIB.
+* **FlexDriver ZUC AFU, BSD-2-Clause** (8 files): Gabi Malka's flexdriver-zuc RTL (as published or wrapped by us); keep the BSD-2 notice.
+* **Xilinx HLx memcached, BSD-3-Clause** (28 files): Xilinx 2016 memcached pipeline (HLx_Examples 249406bf) with our changes marked "innova2:".
 * **AMD Vitis Libraries, Apache-2.0** (58 files): Copies of AMD benchmark directories (unmodified, or changed and marked so); keep the Apache headers.
 * **Ours, patches to AMD Apache-2.0 files** (10 files): Our changes to Vitis Libraries files; context lines are AMD's (Apache-2.0).
-* **Ours, Python port of an AMD host, Apache-2.0** (43 files): pyxrt host translated from AMD's C++ host (Vitis Libraries / Vitis_Accel_Examples host files: Apache-2.0, Xilinx / AMD); both copyrights in the header.
+* **Ours, Python port of an AMD host, Apache-2.0** (40 files): pyxrt host translated from AMD's C++ host (Vitis Libraries / Vitis_Accel_Examples host files: Apache-2.0, Xilinx / AMD); both copyrights in the header.
 * **Ours + AMD Apache-2.0 code** (3 files): Our tool that contains or includes AMD Vitis Libraries kernel code (Apache-2.0).
 * **hls4ml (generated / templates), Apache-2.0** (53 files): Output of hls4ml from our model; nnet_utils are hls4ml's templates.
 * **Dataset derivative, CC-BY-4.0** (1 files): Derived from the hls4ml_lhc_jets_hlf dataset (attribution in NOTICE).

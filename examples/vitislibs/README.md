@@ -33,10 +33,10 @@ the benchmarks' `xrt.ini` profiling options (they crash XRT 2.27 at exit). `chec
 
 **Python hosts instead** (`py/`, 2026-10-17): one pyxrt script per benchmark, so the card's host needs only the xclbins,
 python3, numpy and XRT -- no checkout, no compiler, no AMD data. `bash py/run_py.sh <root>` runs all of them on a tree
-of prebuilt xclbins; py/README.md has what each checks and its results next to the C++ hosts' (21/21 PASS, the same
-numbers within a few per cent).
+of prebuilt xclbins; py/README.md has what each checks and its results next to the C++ hosts' (all pass, the same numbers
+within a few per cent).
 
-## Results (hpy440, Xeon E5-1603 v4, inn2x r10, XRT 2.27; 2026-10-16/17)
+## Results (HP Z440, Xeon E5-1603 v4, inn2x r10, XRT 2.27; 2026-10-16/17)
 
 Clock = the data clock v++ chose (the platform asks for 300 MHz). Every run below passed its host's check; where the
 host checks nothing or the default input is too small, the check named was added.
@@ -46,12 +46,9 @@ host checks nothing or the default input is too small, the check named was added
 | security crc32 | 300 | 256 MB | **4.67 GB/s** | 4.7 GB/s (U50, 300 MHz) | matches |
 | security adler32 | 300 | 256 MB | **4.61 GB/s** | 4.1 GB/s (262 MHz) | matches |
 | security aes256CbcDecrypt_4pu (overlay) | 300 | 32K × 1 KB | **3.65 GB/s** (3.40 GiB/s) | 4.7 GB/s (286 MHz) | 1 DDR4 bank for in + out, U50: separate HBM |
-| security aes256CbcDecrypt (v2023.2) | 200 | 32K × 1 KB | 0.96 GB/s | — | single engine; AMD's row is the 4-PU kernel |
 | codec resize, 7680×4320 → 512² / 1080p / 2160p | 272 | synthetic 8K | **15.5 ms**, output = C model | 12.4–12.6 ms (8 PPC, 341 MHz) | same per clock |
 | codec jpegDec_fix (overlay), 616×516 | 288 | t0.jpg | 0.98 ms, output = C model | (image only) | stock jpegDec: see notes |
 | data_compression lz4_streaming, 32 MB text | 274 | | 212 MB/s compress, 1.48 GB/s decompress | 287 MB/s, 1.8 GB/s (300 MHz) | byte-exact both ways |
-| data_compression zstd_decompress, 32 MB text (zstd -3, 32 KB window) | 228 | | 952 MB/s (output) | 463 MB/s | data not stated; level 19 hangs |
-| data_compression snappy_streaming | 300 | 4 MB, 4 MB blocks | 285 MB/s compress | 260 MB/s | decompress > 64 KB hangs |
 | data_compression zstd_decompress_fix (overlay), 32 MB text, 32 KB window | 231 | zstd -1 / -9 / -19 | 966 / 1149 / 912 MB/s, all byte-exact | 463 MB/s | the stock kernel hangs on -19 |
 | data_compression snappy_streaming_fix (overlay), 32 MB text, 64 KB blocks | 300 | | 222 MB/s compress, 1.79 GB/s decompress, round trip byte-exact | 260 MB/s compress | the stock kernel hangs > 64 KB |
 | database compound_sort, 131072 keys | 271 | | **439 MB/s** | 443 MB/s (U280, 287 MHz) | matches |
@@ -80,13 +77,14 @@ count from `TC_GOLDEN` (default 11, the bundled graph's).
   `uint16_t` arrays) write nothing on hardware (software emulation writes them), and the host divides by 0. The
   `jpegDec_fix` overlay writes the six words one by one; its output then equals software emulation.
 * **resize**: the host never sets `nerror`; `check_resize.sh` compares the card's output with software emulation.
-* **aes256CbcDecrypt**: the README's 4.7 GB/s row is the v2020.x 4-PU kernel; `aes256CbcDecrypt_4pu` brings it back
-  (and fixes its host's golden: OpenSSL padding left block 63 of every message uninitialised).
+* **aes256CbcDecrypt**: AMD's 4.7 GB/s row is the v2020.x 4-PU kernel; `aes256CbcDecrypt_4pu` brings it back (and fixes
+  its host's golden: OpenSSL padding left block 63 of every message uninitialised). The v2023.2 benchmark of the same
+  name has one engine (0.96 GB/s here) and is not kept.
 * **gesvdj / gtsv** are compiled for 16×16 and their hosts do not check `-M`: a bigger size hangs the kernel.
 * **System-compiler (`_sc`) variants** build after `SYS_PORT` pinning, but Vitis 2023.2's `libvpp_acc.a` calls XRT's
   legacy `xclProbe` / `xclOpen`, which XRT ≥ 2.17 no longer exports, so their hosts cannot be linked.
-* zstd_decompress (level-19 streams) and snappy_streaming (decompression > 64 KB) hang the CU until another xclbin is
-  loaded; the `_fix` overlays fix both (their READMEs): zstd has three source bugs (a Repeat_Mode table-count compare
+* The stock zstd_decompress (level-19 streams) and snappy_streaming (decompression > 64 KB) hang the CU until another
+  xclbin is loaded, so only the `_fix` overlays are kept; they fix both (their READMEs): zstd has three source bugs (a Repeat_Mode table-count compare
   that is never true, an extra literal read after a block with no literals, a 32 KB history for a 32 KB window), all
   reproducible in C simulation; snappy's source is correct, but the RTL HLS 2023.2 makes of its chunk-header loop starts
   every chunk after the first one word early (found in RTL co-simulation), and the overlay restructures that loop.

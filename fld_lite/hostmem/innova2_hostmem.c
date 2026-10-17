@@ -7,7 +7,7 @@
 //   insmod innova2_hostmem.ko bdf=0000:04:00.1
 //   /dev/innova2_hostmem: ioctl INNOVA2_HOSTMEM_INFO -> {nbuf, size, bus[NBUF]}; mmap offset k*1MB = buffer k.
 // Without an IOMMU the bus address is the physical address; with one, it is the IOVA mapped for this device (the
-// bridge's requester must then be the same function -- not verified, hpy440 runs without an IOMMU).
+// bridge's requester must then be the same function -- not verified, the test host runs without an IOMMU).
 #include <linux/module.h>
 #include <linux/pci.h>
 #include <linux/miscdevice.h>

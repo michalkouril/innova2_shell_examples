@@ -27,7 +27,7 @@
 // BUILD NOTE (2026-10-03, "BRAM diet"): compile every kernel in this file with
 //   v++ -c ... --hls.pre_tcl fld_lite_hls.tcl        (config_interface -m_axi_buffer_impl auto)
 // and keep the m_axi pragmas below (unused directions minimal, 32-bit res ports). Together: 8.5 BRAM36 instead of 45.5,
-// and faster (idle echo 64 B 1.94 vs 2.17 us, +10 % frames/s at 192-512 B; E5.5 A/B/A on fp6, hpy440).
+// and faster (idle echo 64 B 1.94 vs 2.17 us, +10 % frames/s at 192-512 B; A/B/A on an earlier shell).
 #include "etc/autopilot_ssdm_op.h"                                 // ap_wait()
 #include <ap_int.h>
 #include <ap_axi_sdata.h>

@@ -3,7 +3,7 @@
 # Out-of-tree build against the running kernel + MLNX/DOCA-OFED's ib_core (for ib_register_peer_memory_client).
 KVER ?= $(shell uname -r)
 KDIR ?= /lib/modules/$(KVER)/build
-# /usr/src/ofa_kernel/default can point at another kernel's tree (it was 5.15 on hpy440) -- use the per-kernel one
+# /usr/src/ofa_kernel/default can point at another kernel's tree (it was 5.15 on one test host) -- use the per-kernel one
 OFA  ?= /usr/src/ofa_kernel/x86_64/$(KVER)
 
 obj-m := innova2_peermem.o

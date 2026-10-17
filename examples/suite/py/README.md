@@ -40,7 +40,7 @@ xclbin, buffers in the kernel argument's bank, timing); `suite_lib.py` the ports
 Like AMD's hosts the ports compare whole result arrays; where AMD's `memcmp` compares only `DATA_SIZE` bytes of an
 int array (hello_world, the host_xrt examples), the port is stricter.
 
-## Results (hpy440, inn2x r10, XRT 2.27, 2026-10-17)
+## Results (HP Z440, Xeon E5-1603 v4, inn2x r10, XRT 2.27, 2026-10-17)
 
 All 20 pass, and so do AMD's C++ hosts on the same card the same day (`../run.sh`: 20/20 TEST PASSED; no DMA errors
 either way). Each port takes about one second including the xclbin load (iops_test 8 s).

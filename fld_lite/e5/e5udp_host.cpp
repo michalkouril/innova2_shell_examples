@@ -21,7 +21,7 @@
 //   RX slots 0x58000 (64 x 2 KB)
 //                 [--stop-file F] end the run (cleanly, as at --secs) as soon as file F exists
 //                 [--dump N] with --mcd: print the memcached debug counters every N s (epoch-stamped)
-//                 [--mcd]    memcached xclbin (udp_rx_lite -> mcd -> udp_tx_lite): 64 KB hash table + 64 MB value store
+//                 [--mcd]    memcached xclbin (udp_rx_lite -> mcd -> udp_tx_lite): 64 MB hash table + 1 GB value store
 //                            in bank0, handed to the host-started mcd_mem kernel before the steering rule admits
 //                            traffic; use --port 11211
 //                 [--slots128] with --small/--plram: 128 RX slots of 1536 B (a full 1514 B frame), 256-entry RX and TX CQs;
@@ -200,8 +200,8 @@ int main(int argc, char **argv)
   xrt::bo mht, mvs, mdbg; xrt::run mrun, drun;
   if (mcdk) {
     xrt::kernel kmem(dev, uuid, "mcd_mem");
-    mht = xrt::bo(dev, 64u << 10, xrt::bo::flags::normal, kmem.group_id(8));
-    mvs = xrt::bo(dev, 64u << 20, xrt::bo::flags::normal, kmem.group_id(9));
+    mht = xrt::bo(dev, 64u << 20, xrt::bo::flags::normal, kmem.group_id(8));    // 2^20 lines: mcd v5
+    mvs = xrt::bo(dev, 1u << 30, xrt::bo::flags::normal, kmem.group_id(9));     // 524288 x 2 KB slots
     // debug snapshots (mcd_dbg, args: 2 streams then out = 2) -- started before mcd_mem so nothing is missed
     try {
       xrt::kernel kdbg(dev, uuid, "mcd_dbg");

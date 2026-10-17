@@ -143,7 +143,7 @@ void memWrite(stream<hashTableInternalWord> &comp2memWrKey, stream<internalMdWor
 							outputWordMemCtrl.count += 1;
 						//ap_uint<7> tempAddress = htMemWriteInputWordMd.metadata.range(noOfHashTableEntries + 4, 8);	// Plus 5 here is to shift the 8 LSBs of the address.
 						ap_uint<32> tempAddress = htMemWriteInputWordMd.metadata;
-						outputWordMemCtrl.address.range(noOfHashTableEntries - 1, 3) = tempAddress.range(6, 0);
+						outputWordMemCtrl.address.range(noOfHashTableEntries - 1, 3) = tempAddress.range(noOfHashTableEntries - 4, 0);	// innova2: was range(6, 0)
 						memWrCtrl.write(outputWordMemCtrl);
 						outputWord.status = 0;
 						inputWordMem.range(((bitsPerBin*memWr_location)+8)-1, bitsPerBin*memWr_location) = memWr_keyLength;
@@ -178,7 +178,7 @@ void memWrite(stream<hashTableInternalWord> &comp2memWrKey, stream<internalMdWor
 						outputWordMemCtrl.count = 1;
 						//ap_uint<7> tempAddress = htMemWriteInputWordMd.metadata.range(noOfHashTableEntries + 4, 8);
 						ap_uint<32> tempAddress = htMemWriteInputWordMd.metadata;
-						outputWordMemCtrl.address.range(noOfHashTableEntries - 1, 3) = tempAddress.range(6, 0);
+						outputWordMemCtrl.address.range(noOfHashTableEntries - 1, 3) = tempAddress.range(noOfHashTableEntries - 4, 0);	// innova2: was range(6, 0)
 						memWrCtrl.write(outputWordMemCtrl);
 						addressReturnOut.write(inputWordMem.range(((bitsPerBin*memWr_location)+87)-1, (bitsPerBin*memWr_location)+56));
 						outputWord.status = 0;

@@ -21,16 +21,17 @@
 // v2 (2026-10-04): the memory servers are a SEPARATE host-started kernel, mcd_mem (ht / vs as normal kernel
 // arguments). In v1 they sat inside the free-running mcd with AXI-Lite pointer registers: the hash table zeroes
 // itself right after reset, BEFORE the host had written the pointers, and those writes landed relative to address 0
-// -- on FLD-lite's rings (hpy440, 2026-10-04 02:5x: no replies, garbage RX CQEs). Now mcd has no memory port at all;
+// -- on FLD-lite's rings (2026-10-04: no replies, garbage RX CQEs). Now mcd has no memory port at all;
 // its commands wait in the streams (back-pressure) until the host starts mcd_mem with the right buffers.
 // v3 (2026-10-04): every process of OURS inside the mcd dataflow region is strictly non-blocking (writes only when the
-// stream has room, reads with read_nb). On hpy440 the core froze after 13 start-up hash-table writes: alloc_assign_proc
+// stream has room, reads with read_nb). On the card the core froze after 13 start-up hash-table writes: alloc_assign_proc
 // blocked writing free slots into the 16-deep addrDram stream (nothing consumes them before a SET), and a blocked
 // process stalls the whole region. C simulation cannot show it (unbounded streams). Writes to the OTHER kernels'
 // streams (txm/txd) may block: those consumers drain independently.
 // Flush (binary FLUSH) is acknowledged at once (flush_ack tied 1): the hash table is cleared, the slot allocator is
 // NOT reset (slots of flushed keys leak until the kernel is reloaded) -- a later fix.
-// Hash table size is the demo's: 7 bits of hash x 8 lines (64 KB, ~512 keys). Scaling it is a later step.
+// v5 (2026-10-17): hash table 2^17 buckets x 8 lines (64 MB, 524288 keys of up to 112 B, 4 per bucket; the demo had
+// 128 buckets, ~500 keys) and value store 524288 x 2 KB slots (1 GB); globals.h noOfHashTableEntries = 20.
 #include "globals.h"
 #include <ap_axi_sdata.h>
 
@@ -49,7 +50,7 @@ typedef ap_uint<64> dbg_t;
 typedef ap_uint<DBG_TICK_BITS> dbg_tick_t;
 static inline dbg_t dbg_word(unsigned id, ap_uint<56> v) { dbg_t w = 0; w.range(63, 56) = id; w.range(55, 0) = v; return w; }
 static const unsigned SLOT_LINES = 32;          // 2 KB value-store slots
-static const unsigned VS_SLOTS = 32768;         // 64 MB value store
+static const unsigned VS_SLOTS = 524288;        // 1 GB value store
 static const unsigned RET_DEPTH = 1024;         // recycled-slot FIFO
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -356,7 +357,7 @@ void alloc_assign_proc(hls::stream<ap_uint<32> > &recycled, hls::stream<ap_uint<
 {
 #pragma HLS INLINE off
 #pragma HLS PIPELINE II=1 style=flp
-  static ap_uint<16> fresh = 0;
+  static ap_uint<20> fresh = 0;
   ap_uint<32> a;
   if (assign.full()) return;                  // nothing consumes free slots before a SET: never block on it
   if (recycled.read_nb(a)) assign.write(a);
@@ -408,7 +409,7 @@ extern "C" void mcd(hls::stream<meta_t> &rxm, hls::stream<nax_t> &rxd, hls::stre
 #pragma HLS INTERFACE ap_ctrl_none port=return
 // v4 (2026-10-17): no start propagation -- every process free-running (ap_start = 1), as the 2015 design assumes. With
 // start FIFOs, a process may only iterate when its stream producer does: cmd_out<5> ran once per memRead iteration, so
-// when memRead blocked on a full htRdCmd, nothing drained htRdCmd -- the core deadlocked under load (hpy440 3 x 21 and
+// when memRead blocked on a full htRdCmd, nothing drained htRdCmd -- the core deadlocked under load (3 x 21 and
 // 4 x 16 GETs in flight) and the start FIFOs then froze every process, rx_proc included.
 #pragma HLS DATAFLOW disable_start_propagation
 

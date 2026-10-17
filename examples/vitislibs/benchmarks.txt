@@ -9,14 +9,11 @@
 
 security/L1/benchmarks/crc32                               args=-xclbin BUILD/CRC32Kernel.xclbin -data PROJECT/test.dat -num 32768
 security/L1/benchmarks/adler32                             data args=-xclbin BUILD/Adler32Kernel.xclbin -data PROJECT/data/test.dat -num 32768
-security/L1/benchmarks/aes256CbcDecrypt                    data args=-mode fpga -xclbin BUILD/aes256CbcDecryptKernel.xclbin -len 1024 -num 32768 -gld PROJECT/data/gld.dat
 security/L1/benchmarks/aes256CbcDecrypt_4pu                # overlay/: the v2020.2 4-PU kernel of the published figure
 codec/L2/demos/jpegDec_fix                                 # overlay/: jpegDec with copyInfo fixed (see README)
 codec/L2/demos/resize                                      # its host checks nothing: run check_resize.sh
-data_compression/L2/demos/zstd_decompress                  data   # hangs on zstd -19 streams: use zstd_decompress_fix
 data_compression/L2/demos/zstd_decompress_fix              # overlay/: three decoder fixes (see its README)
 data_compression/L2/demos/lz4_streaming                    data
-data_compression/L2/demos/snappy_streaming                 data   # decompression > 64 KB hangs: use snappy_streaming_fix
 data_compression/L2/demos/snappy_streaming_fix             # overlay/: chunk-header loop restructured (see its README)
 database/L1/benchmarks/compound_sort
 graph/L2/benchmarks/label_propagation                      data
@@ -29,6 +26,9 @@ quantitative_finance/L2/demos/Quadrature
 solver/L2/benchmarks/gesvdj                                # 16x16 only: AMD's 512x512 needs 128 URAM
 solver/L2/benchmarks/gtsv                                  # 16x16 only: see gtsv_1024 below
 
+# security/L1/benchmarks/aes256CbcDecrypt                 # superseded by aes256CbcDecrypt_4pu (v2023.2: one engine, 0.96 GB/s)
+# data_compression/L2/demos/zstd_decompress               # superseded by zstd_decompress_fix (stock: hangs on zstd -19)
+# data_compression/L2/demos/snappy_streaming              # superseded by snappy_streaming_fix (stock: decompression > 64 KB hangs)
 # codec/L2/demos/jpegDec                                   # hardware writes no axi_height/axi_width: use jpegDec_fix
 # data_analytics/L2/benchmarks/classification/naive_bayes  # URAM 256 (HLS) / 128 (synth) > 32, BRAM 1137 RAMB36 > 792
 # data_analytics/L2/demos/text/dup_match                   # 2 CUs x 9 ports = 18 masters > bank0's 15

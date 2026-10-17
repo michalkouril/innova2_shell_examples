@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2026 the innova2 contributors
 # SPDX-License-Identifier: Apache-2.0
 #
-# E5.2: package the FlexDriver ZUC AFU (rtl/zuc_k.v wrapper + the AFU sources + rtl/zuc_ip_synth.v) as a Vitis RTL
+# E5.2: package the FlexDriver ZUC AFU (rtl4/zuc_k.v wrapper + the AFU sources + rtl4/zuc_ip_synth.v) as a Vitis RTL
 # kernel, user-managed control (no ap_start; host uses xrt::ip on s_axi_control).
 #   vivado -mode batch -source package_zuc_k.tcl -tclargs <out dir>
 set out  [lindex $argv 0]
-set top_file [expr {[llength $argv] > 1 ? [lindex $argv 1] : "zuc_k.v"}]   ;# zuc_k.v (250 MHz) or zuc_k200.v (AFU at 200 MHz)
+set top_file [expr {[llength $argv] > 1 ? [lindex $argv 1] : "zuc_k.v"}]   ;# the kernel wrapper
 set here [file dirname [file normalize [info script]]]
-set rtl  [expr {[llength $argv] > 2 ? [file normalize [lindex $argv 2]] : "$here/rtl"}]   ;# rtl (8 cores) or rtl4 (4 cores)
+set rtl  [expr {[llength $argv] > 2 ? [file normalize [lindex $argv 2]] : "$here/rtl4"}]   ;# rtl4: the 4-core AFU
 file mkdir $out
 create_project -in_memory -part xcku15p-ffve1517-2-e
 set srcs [list $rtl/$top_file $rtl/zuc_ip_synth.v $rtl/zuc_afu.v $rtl/zuc_module_wrapper.v $rtl/zuc_module.v \

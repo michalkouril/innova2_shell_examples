@@ -39,7 +39,7 @@ render node; root works).
 * File handling as gzip: the input is removed unless `-k` / `-c`, mode and times are kept, existing outputs are not
   overwritten without `-f`, compressed data is not written to a terminal without `-f`.
 
-## Measured (hpy440: Xeon E5-1603 v4, 4 cores; whole command through the resident helper, output to /dev/null)
+## Measured (HP Z440: Xeon E5-1603 v4, 4 cores; whole command through the resident helper, output to /dev/null)
 
 | | ratio: docs / python / binaries / syslog | compress 419 MB text | decompress it |
 |---|---|---|---|

@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   std::vector<std::string> golden; while (std::getline(gold, line)) if (!line.empty()) golden.push_back(line);
   if (getenv("MUTATE") && golden.size() > 100) golden[100][0] = golden[100][0] == '0' ? '1' : '0';
 
-  std::vector<ap_uint<512> > ht(1024), vs(32768u * 32u);
+  std::vector<ap_uint<512> > ht(1u << 20), vs(524288u * 32u);   // mcd v5: 2^20 hash-table lines, 1 GB value store
   hls::stream<meta_t> rxm("rxm"), txm("txm"); hls::stream<nax_t> rxd("rxd"), txd("txd");
   cs_t hrc("hrc"), hwc("hwc"), vrc("vrc"), vwc("vwc"), dbg1("dbg1"), dbg2("dbg2"); unsigned long long dbgv[64] = {0}; ds_t hrd("hrd"), hwd("hwd"), vrd("vrd"), vwd("vwd");
   // mcd_mem is started late (host order: load xclbin, allocate buffers, start mcd_mem): the hash table's start-up
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   const unsigned IP = 0x0A01A8C0, CPORT = 40001, LPORT = 11211;   // 192.168.1.10 (wire order), client/local ports
   std::vector<std::string> out; unsigned meta_bad = 0, nresp = 0; size_t r = 0; unsigned idle = 0;
   std::vector<unsigned long long> curw; std::vector<unsigned> curk; unsigned curlen = 0, curbytes = 0;
-  for (long cyc = 0; cyc < 4000000; cyc++) {
+  for (long cyc = 0; cyc < 12000000; cyc++) {   // + ~1M cycles of start-up zeroing (2^20 lines)
     if (r < reqs.size() && rxd.empty() && cyc >= MEMSTART) {
       if (idle < reqs[r].wait) idle++;
       else {

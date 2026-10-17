@@ -31,7 +31,7 @@
 #include <linux/version.h>
 #include <linux/sched/mm.h>
 
-/* Older kernels (x440: 5.8 + MLNX_OFED 5.2). vma_lookup arrived in 5.14; fixup_user_fault lost its task argument in
+/* Older kernels (e.g. 5.8 + MLNX_OFED 5.2). vma_lookup arrived in 5.14; fixup_user_fault lost its task argument in
  * 5.9; follow_pte(mm, addr, ptep, ptl) is exported from 5.12 -- before that use the exported follow_pfn(), which
  * covers exactly our case (xocl maps the P2P BAR with VM_PFNMAP). */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)

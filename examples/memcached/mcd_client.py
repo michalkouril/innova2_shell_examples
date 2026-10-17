@@ -55,9 +55,8 @@ def DEL(k):
 
 print("FPGA memcached at %s:%d, %d keys" % (FPGA[0], FPGA[1], NKEYS), flush=True)
 random.seed(7)
-# keys are seeded, not random per run: the demo hash table (128 buckets of at most 8 keys, 7 hash bits) refuses a SET
-# whose bucket is full, so a random key set fails a SET now and then (C simulation fails the same keys the card does);
-# these 64 fit (checked in C simulation, 2026-10-17)
+# keys are seeded, not random per run, so every run tests the same keys: a SET whose hash bucket is full is refused
+# (4 keys per bucket; with the demo's 128 buckets a random set of 64 keys failed now and then)
 keys = [b"key-%04d-%06x" % (i, random.getrandbits(24)) for i in range(NKEYS)]
 vals = {k: os.urandom(random.choice([1, 7, 8, 63, 64, 65, 100, 255, 256, 511, 512, 1000, 1400, 2000])) for k in keys}
 

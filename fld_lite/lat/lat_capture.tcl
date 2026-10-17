@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the innova2 contributors
 # SPDX-License-Identifier: Apache-2.0
 #
-# ILA capture of lat_probe's mem interface over PCIe (XVC). Env: LTX, XCLBIN (path on hpy440), MODE, OFF, N, OUT (csv),
+# ILA capture of lat_probe's mem interface over PCIe (XVC). Env: LTX, XCLBIN (path on the card's host), MODE, OFF, N, OUT (csv),
 # XVC_HOST (the card's host, running xvc_pcie on TCP 10200 and holding ~/lat/lat_host), TRIG (probe-name glob to trigger on, e.g. *AWVALID* or *ARVALID*). xvc_pcie must already serve TCP 10200 on XVC_HOST.
 open_hw_manager
 connect_hw_server -url localhost:3121

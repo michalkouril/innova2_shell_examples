@@ -69,7 +69,7 @@ const uint8_t 	concFilterEntries		= 8;
 const uint8_t 	accFilterEntries		= 8;
 const uint8_t	dramMemAddressWidth		= 32;
 const uint8_t	flashMemAddressWidth	= 32;
-const uint8_t	noOfHashTableEntries	= 10;
+const uint8_t	noOfHashTableEntries	= 20;	// innova2: hash-table line address bits (was 10): 2^17 buckets of 8 lines (4 keys each), 64 MB
 const uint32_t	hashFunctionSeed		= 13;
 const bool 		bramOrDram				= false;	// False is BRAM, True is DRAM
 
@@ -174,7 +174,7 @@ struct decideResultWord {
 };
 
 struct ccWord {
-	ap_uint<noOfHashTableEntries-4> 	address;
+	ap_uint<noOfHashTableEntries-3> 	address;	// innova2: the whole bucket number (was one bit short)
 	ap_uint<16> 						valueLength;
 	ap_uint<8>							operation;
 	ap_uint<1>							status;

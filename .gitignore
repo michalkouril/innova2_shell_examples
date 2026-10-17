@@ -2,3 +2,5 @@ build/
 *.pyc
 __pycache__/
 tools/figz/test/
+fld_lite/devx/mlx5_ifc.h
+fld_lite/devx/mlx5_ifc_fpga.h

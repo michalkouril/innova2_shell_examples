@@ -7,10 +7,9 @@
 # (192.168.77.2:11211, jumbo frames); mcd_client.py in a network namespace on port 1 runs SET/GET/DELETE checks with
 # 64 B - 1 KB values (its GET rate is one request at a time: 1 / round trip); then mcd_load, a multi-threaded C load
 # generator with a window of requests in flight per thread, measures throughput and latency percentiles, byte-checking
-# every 16th GET hit. MCD_KEYS (default 256): the demo hash table has 128 buckets (7 hash bits) and refuses a SET
-# whose bucket is full: into an empty table 7 of mcd_load's 256 keys (k00000000..k00000255) do not fit, exactly as in
-# C simulation; here mcd_client's 64 keys are already in it, so the preload refuses more (237 ok / 19 on 2026-10-17)
-# and those keys stay misses / refused SETs in the load runs.
+# every 16th GET hit. MCD_KEYS (default 65536): the hash table has 131072 buckets of 4 keys (17 hash bits; 64 MB) and
+# the value store 524288 slots of 2 KB (1 GB); a SET whose bucket is full is refused -- about 0.03 % of 65536 keys
+# (C simulation: 18 of k00000000..k00065535).
 D=$(cd "$(dirname "$0")" && pwd); . "$D/../../common/net_lib.sh"
 X=$(readlink -f "${1:-$REPO/xclbin/memcached.xclbin}"); L=$(mktemp -d "$D/run.XXXXXX")
 gcc -O2 -pthread -o "$L/mcd_load" "$D/mcd_load.c" || exit 1
@@ -19,7 +18,7 @@ endpoint $L/host.log $X $IB0 $CX5_BDF --port 11211 --secs 200 --bf --jumbo --mcd
 sudo -n ip netns exec $NS python3 "$D/mcd_client.py" $IPF 11211 64
 # --inorder: the Xilinx pipeline does not return the request's opaque field, but answers in order; --check-every 16
 # byte-checks every 16th GET hit against the preloaded value
-ld() { sudo -n ip netns exec $NS "$L/mcd_load" --server $IPF --port 11211 --keys ${MCD_KEYS:-256} --secs 5 --quiet --inorder \
+ld() { sudo -n ip netns exec $NS "$L/mcd_load" --server $IPF --port 11211 --keys ${MCD_KEYS:-65536} --secs 5 --quiet --inorder \
          --check-every 16 "$@" | grep -E '^RESULT|^preload|^\*\*\*'; }
 # Until 2026-10-17 the pipeline stalled under load (GETs at 3 x 21 in flight, SETs that overwrite a key); the three
 # causes are fixed (mcd_kernel.cpp v4, mcd_hls.tcl, memWrite.cpp) and kernels/mcd_load_tb.cpp checks them in C simulation.

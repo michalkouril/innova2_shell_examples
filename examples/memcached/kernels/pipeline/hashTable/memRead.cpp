@@ -49,7 +49,7 @@ void memRead(stream<hashTableInternalWord> &cc2memRead, stream<internalMdWord> &
 				if (inDataMd.operation != 8) {
 					//ap_uint<7> tempAddress = inDataMd.metadata.range(noOfHashTableEntries + 4, 8);
 					ap_uint<32> tempAddress = inDataMd.metadata;
-					memData.address.range(noOfHashTableEntries - 1, 3)  = tempAddress.range(6, 0);
+					memData.address.range(noOfHashTableEntries - 1, 3)  = tempAddress.range(noOfHashTableEntries - 4, 0);	// innova2: was range(6, 0)
 					memData.count	= inDataMd.keyLength/16;
 					if (inDataMd.keyLength > (memData.count*16))
 						memData.count += 2;

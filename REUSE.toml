@@ -6,9 +6,7 @@ SPDX-PackageDownloadLocation = "https://github.com/michalkouril/innova2_shell_ex
 # Our files without a header (configs, docs, data lists, patches against Apache-2.0 Vitis Libraries)
 [[annotations]]
 path = [".gitignore", "README.md", "NOTICE", "LICENSE_AUDIT.md", "**/link.cfg", "**/conn.cfg", "**/README.md",
-        "examples/suite/examples.txt", "examples/vitislibs/benchmarks.txt", "examples/vitislibs/graphdata/tools/**", "fld_lite/e5/*.cfg", "fld_lite/e5/link.sh",
-        "fld_lite/e5/flowtest.cpp", "fld_lite/e5/udp_swap_tb.cpp", "fld_lite/e5/zuc/adapt_test.cpp",
-        "fld_lite/e5/zuc/host_check_test.cpp", "fld_lite/e5/zuc/sim_rtl/**/gen_check.py", "fld_lite/e5/zuc/sim_rtl/**.v",
+        "examples/suite/examples.txt", "examples/vitislibs/benchmarks.txt", "examples/vitislibs/graphdata/tools/**", "fld_lite/e5/udp_swap_tb.cpp", "fld_lite/e5/zuc/adapt_test.cpp",
         "fld_lite/e5/zuc/sim_rtl/gen_check.py", "fld_lite/e5/zuc/sim_rtl/*.v", "xclbin/SHA256SUMS", "xclbin/MANIFEST.md"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = ["2026 the innova2 contributors"]
@@ -37,8 +35,7 @@ SPDX-License-Identifier = "Apache-2.0"
 
 # ZUC reference model / S-boxes derived from FlexDriver's flexdriver-zuc (BSD-2-Clause, Gabi Malka)
 [[annotations]]
-path = ["fld_lite/e5/zuc/zuc_sbox.h", "fld_lite/e5/zuc/sim_rtl/zuc_ref.py", "fld_lite/e5/zuc/sim_rtl/xsim4/zuc_ref.py",
-        "fld_lite/e5/zuc/sim_rtl/xsim4/hold/zuc_ref.py"]
+path = ["fld_lite/e5/zuc/zuc_sbox.h", "fld_lite/e5/zuc/sim_rtl/zuc_ref.py"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2020-2021 Gabi Malka"]
 SPDX-License-Identifier = "Apache-2.0 AND BSD-2-Clause"
@@ -50,7 +47,7 @@ SPDX-FileCopyrightText = ["2020-2021 Gabi Malka"]
 SPDX-License-Identifier = "BSD-2-Clause"
 
 [[annotations]]
-path = ["examples/memcached/kernels/pipeline_orig2015/**", "examples/memcached/kernels/pipeline/**"]
+path = ["examples/memcached/kernels/pipeline/**"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = ["2016 Xilinx, Inc."]
 SPDX-License-Identifier = "BSD-3-Clause"
@@ -58,7 +55,7 @@ SPDX-License-Identifier = "BSD-3-Clause"
 [[annotations]]
 path = ["examples/memcached/kernels/pipeline/globals.h", "examples/memcached/kernels/pipeline/valueStore/valueStore.cpp",
         "examples/memcached/kernels/pipeline/valueStore/flashValueStore.cpp",
-        "examples/memcached/kernels/pipeline/hashTable/memWrite.cpp"]
+        "examples/memcached/kernels/pipeline/hashTable/memWrite.cpp", "examples/memcached/kernels/pipeline/hashTable/memRead.cpp"]
 precedence = "override"
 SPDX-FileCopyrightText = ["2016 Xilinx, Inc.", "2026 the innova2 contributors"]
 SPDX-License-Identifier = "BSD-3-Clause"

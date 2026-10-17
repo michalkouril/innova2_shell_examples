@@ -7,7 +7,7 @@
 # four GZip decompressors, so figz decompresses up to four of its members at once (each decompressor is ~12k LUTs).
 # The compressor carries LZ77 history across its 32 KB blocks (patches/gzip_hist.patch): each block is preceded by the
 # last 8 KB of the one before, which its core reads but does not emit (from a separate 8 KB FIFO per core), and
-# matches are extended over offsets up to 32 KB: on hpy440 text went from 4.55x to 5.06x (gzip -1: 4.90x) and figz
+# matches are extended over offsets up to 32 KB: on the HP Z440 test host text went from 4.55x to 5.06x (gzip -1: 4.90x) and figz
 # compression from 1.23 to 0.97 GB/s. The congestion strategy keeps the data clock at 205 MHz (157 MHz without).
 . "$(dirname "$0")/../../../common/build_lib.sh"
 begin compression_gzip_figz

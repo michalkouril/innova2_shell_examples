@@ -20,7 +20,7 @@ a card; the table gives the result of that run (see "Results").
 | `examples/rsa` | RSA-2048 signing: CRT halves as 1024-bit modular exponentiations on 9 engines, every signature verified on the host (pyxrt, no host build) | rsa_modexp |
 | `tools/figz` | **`figz`**, used like `gzip`, compressing and decompressing on the card (Python, no build step) | the `gzip_figz` xclbin (or `gzip_combo`) |
 | `examples/suite` | 20 examples from AMD Vitis_Accel_Examples, re-pinned to this card's memory; AMD's C++ hosts, or Python (pyxrt) ports of them in `py/` | (upstream) |
-| `examples/vitislibs` | 21 AMD Vitis Libraries benchmarks (3 with our fixes to AMD bugs: jpegDec, zstd, snappy) built with their own Makefiles (C++ hosts, or the Python (pyxrt) hosts in `py/`) and compared with AMD's published numbers (crc32, adler32, AES, resize, jpegDec, LZ4/zstd/snappy, compound sort, 5 graph algorithms on SuiteSparse graphs, SVD, quadrature, solvers); results and the ones that do not fit in `examples/vitislibs/README.md`; no xclbins in `xclbin/` | (upstream) |
+| `examples/vitislibs` | 18 AMD Vitis Libraries benchmarks (3 with our fixes to AMD bugs: jpegDec, zstd, snappy; AES as the 4-engine kernel of AMD's published figure) built with their own Makefiles (C++ hosts, or the Python (pyxrt) hosts in `py/`) and compared with AMD's published numbers (crc32, adler32, AES, resize, jpegDec, LZ4/zstd/snappy, compound sort, 5 graph algorithms on SuiteSparse graphs, SVD, quadrature, solvers); results and the ones that do not fit in `examples/vitislibs/README.md`; no xclbins in `xclbin/` | (upstream) |
 
 `fld_lite/` holds what the network examples share: the FLD-lite kernels (`e5/fld_lite.cpp`), the generator / checker
 (`e5/gen`), UDP (`e5/udp_lite.cpp`), the ZUC AFU (`e5/zuc`), the host programs (`e5/*_host.cpp`) with their DevX
@@ -75,24 +75,25 @@ at a pinned commit.
 
 ## Results
 
-Run of 2026-10-16 on hpy440 (Xeon E5-1603 v4, 4 cores; card 0000:04:00, inn2x r10, XRT 2.27, Ubuntu 26.04), with the
-xclbins in `xclbin/` (`SHA256SUMS`), from a fresh clone: `fld_lite/host_setup.sh`, then each run script.
-The xclbins were built by `build_all.sh` from this tree; the commits after the build changed scripts only, not kernels.
+On an HP Z440 (Xeon E5-1603 v4, 4 cores; card 0000:04:00, inn2x r10, XRT 2.27, Ubuntu 26.04), with the xclbins in
+`xclbin/` (`SHA256SUMS`), from a clean copy of this tree: `fld_lite/host_setup.sh`, then each run script. The network
+examples, lat_probe, hostmem and the Python hosts were run on 2026-10-17; rsa, compression, figz and the suite's C++
+hosts on 2026-10-16 (their kernels have not changed since).
 Data clock = the frequency v++ chose for the kernels (the platform asks for 300 MHz). No run logged a `DMA failed`.
 
 | example | data clock | result |
 |---|---|---|
-| fld_echo | 300 MHz | 200,000 frames each at 64 / 256 / 512 / 1024 / 1500 B: 0 TX / RX errors; 1024 and 1500 B lossless; 64 B idle echo round trip 4.32 µs mean (p99 5.11), of which the FPGA's RX → TX 1.85 µs |
-| zuc | 227 MHz | 0 mismatches in every run. Integrity 8191 B 19.45 Gb/s; confidentiality 8191 B 9.73 Gb/s (lossless); paced 4096 B 7.24 Gb/s lossless |
-| memcached | 300 MHz | client 10/10 PASS (SET / GET byte-exact / miss / overwrite / DELETE / oversize SET refused); load (run 2026-10-17, new xclbin), 0 lost in every run: 83.0k req/s at p50 11.7 µs (window 1); GETs 1.16M req/s (4 threads × 16) and 1.42M req/s (4 × 64); GET/SET mixes 1.03M (10 % SETs), 1.05M (50 %), 1.31M req/s (100 %, 4 × 64) -- the client host's 4 cores set these rates. Three causes of its former stalls under load fixed (HLS start propagation, reset of static state, an overwrite bug in the 2015 hash table); `kernels/mcd_load_tb.cpp` checks them in C simulation |
-| ntp | 300 MHz | (run of 2026-10-17, `examples/ntp/README.md`) NTP-CLIENT PASS: 2,200 replies, every origin echoed, v3 and v4; 6 invalid requests dropped and counted; FPGA − host offset p50 −155 ns (p5 −786, p95 +102), servo rms 264 ns; `chronyd -Q` 2 µs; FPGA residence 170 ns; load 1.38 M replies/s (4 threads × 32), 0 lost of 13.2 M |
-| hls4ml | 241 MHz | 166,000 jets, 0 lost, every score equal to hls4ml's bit-accurate model, 63.5k jets/s (Python client); accuracy vs labels 0.763; ping-pong RTT median 23.2 µs |
+| fld_echo | 300 MHz | 200,000 frames at gap 0 each size, 0 TX / RX errors, 0 mismatches: 2.75 M frames/s at 64 B, 1.64 M at 256 B, 1.57 M at 512 B, 10 GbE line rate lossless at 1024 B (1.21 M frames/s, 9.94 Gb/s) and 1500 B; 64 B idle echo round trip 4.29 µs mean (p99 5.45), of which the FPGA's RX CQE → TX CQE 1.87 µs |
+| zuc | 227 MHz | 0 mismatches in every run. Integrity 8191 B 19.45 Gb/s, 4096 B 16.05 Gb/s; confidentiality 8191 B 9.67 Gb/s, 4096 B 9.13 Gb/s; paced 4096 B 7.24 Gb/s lossless |
+| memcached | 300 MHz | client 10/10 PASS (SET / GET byte-exact / miss / overwrite / DELETE / oversize SET refused); 65,536 keys preloaded (18 refused: full buckets, as C simulation predicts); 0 lost in every run: 86.8k req/s at p50 11.3 µs (window 1); GETs 1.12 M req/s (4 threads × 16) and 1.44 M req/s (4 × 64); GET/SET mixes 1.13 M (10 % SETs), 1.06 M (50 %), 1.28 M req/s (100 %, 4 × 64) -- the client host's 4 cores set these rates. Hash table 131,072 buckets × 4 keys, value store 524,288 × 2 KB; `kernels/mcd_load_tb.cpp` checks the stall and overwrite fixes and the capacity in C simulation |
+| ntp | 300 MHz | NTP-CLIENT PASS: 2,200 replies, every origin echoed, v3 and v4; 6 invalid requests dropped and counted; FPGA − host offset p50 +231 ns (p5 −466, p95 +783); servo locked, last offsets +190 / +214 / −112 ns; `chronyd -Q` 3 µs; FPGA residence 170 ns; load 1.39 M replies/s (4 threads × 32), 0 lost of 13.1 M |
+| hls4ml | 241 MHz | 166,000 jets, 0 lost, every score equal to hls4ml's bit-accurate model, 60.4k jets/s (Python client); accuracy vs labels 0.763; ping-pong RTT median 23.0 µs |
 | lat_probe | 300 MHz | per access, DDR mode `on`: write+ack 88 cycles, read 104 cycles; HYBRID URAM window: 70 / 72 cycles |
-| hostmem | 300 MHz | kernel ↔ host RAM: 32768 beats each way, 0 wrong; 7.05 GB/s write, 7.02 GB/s read |
+| hostmem | 300 MHz | kernel ↔ host RAM: 32768 beats each way, 0 wrong; 6.97 GB/s write, 7.43 GB/s read; dependent read 1.05 µs |
 | rsa | 213 MHz | 1,100 RSA-2048 signatures × 10 rounds, all verified on the host (0 failing); 7,526 signatures/s (one signature 2.44 ms); the host CPU, `openssl speed -multi 4`: 5,448/s |
 | compression | lz4 300, lz4x4 297, lz4x8 281, gzip 300, gzip8 249, gzip_x4 244, gunzip 278, gzip_combo 258 MHz | 28 OK, 0 FAIL, 2 SKIP: zeros through the decompressor -- a known limitation of AMD's `gzip_decompress_mm`: for a stream compressed more than roughly 100-300:1 (`gzip -6` of zeros is ~1000:1) it returns 0 bytes and its host reports success; every output checked with `lz4 -d` / `gzip -d` and compared. Compress, text: lz4 572 / lz4x4 1115 / lz4x8 1995 MB/s, gzip 588 / gzip8 1880 / gzip_x4 1816 / gzip_combo 1959 MB/s; decompress `gzip -6` text: gunzip 1172 MB/s |
 | figz | gzip_figz 205 MHz | `tools/figz/test_figz.sh`: 48 OK, 0 FAIL |
-| suite | (per example) | 20 / 20 TEST PASSED, rc 0 (run 2026-10-16 with `examples/suite/run.sh`; its xclbins are built by the suite, not in `xclbin/`); the Python hosts (`examples/suite/py/run_py.sh`, 2026-10-17): 20 / 20 PASS on the same xclbins |
+| suite | (per example) | 20 / 20 TEST PASSED with AMD's C++ hosts (`examples/suite/run.sh`) and 20 / 20 PASS with the Python hosts (`examples/suite/py/run_py.sh`) on the same xclbins; built by the suite, not in `xclbin/` |
 
 ## Licences
 
