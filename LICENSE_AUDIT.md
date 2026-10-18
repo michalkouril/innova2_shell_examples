@@ -64,7 +64,7 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/compression/patches/host_mcr.patch` | Ours, patches to AMD Apache-2.0 files | — (REUSE.toml) |
 | `examples/compression/patches/host_timing.patch` | Ours, patches to AMD Apache-2.0 files | — (REUSE.toml) |
 | `examples/compression/patches/lz4_dict_bram.patch` | Ours, patches to AMD Apache-2.0 files | — (REUSE.toml) |
-| `examples/compression/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0; copyright files),  |
+| `examples/compression/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0; copyright files, r |
 | `examples/fld_echo/build.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/fld_echo/link.cfg` | Ours | — (REUSE.toml) |
 | `examples/fld_echo/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
@@ -425,7 +425,7 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `fld_lite/lat/lat_probe_l1.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `tools/figz/README.md` | Ours | — (REUSE.toml) |
 | `tools/figz/figz` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
-| `tools/figz/test_figz.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0; copyright files),  |
+| `tools/figz/test_figz.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0; copyright files, r |
 | `xclbin/MANIFEST.md` | Ours, generated data | — (REUSE.toml) |
 | `xclbin/SHA256SUMS` | Ours, generated data | — (REUSE.toml) |
 | `xclbin/fld_echo.xclbin` | Vitis-built binary containing AMD IP | binary |

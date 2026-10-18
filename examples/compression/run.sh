@@ -3,15 +3,28 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# run.sh [variant ...] -- on the card's host, after host/build_hosts.sh. Default: every variant whose xclbin is in
-# <repo>/xclbin. Inputs (32 MB each, made once in ./data): text (the system's /usr/share/doc/*/copyright files), random
-# bytes, zeros. Every FPGA output is checked with the stock tool (lz4 -d / gzip -d) and compared with the input; the
-# decompressor is fed stock gzip -6 output and FPGA output. Prints the kernel throughput the host program reports.
+# run.sh [variant ...] -- Vitis Libraries' LZ4 and GZIP kernels on the card, every output checked with the stock tools.
+#
+# What it shows: each variant (lz4 lz4x4 lz4x8 gzip gzip8 gzip_x4 gunzip gzip_combo; default: every one whose xclbin
+#   is in <repo>/xclbin) compresses or decompresses three 32 MB inputs on the card: text (the system's
+#   /usr/share/doc/*/copyright files, repeated), random bytes, zeros. Compressed output is decompressed with lz4 -d /
+#   gzip -d and compared with the input; the decompressor is fed stock gzip -6 output and (gzip_combo) the FPGA's own.
+# Needs: the card running inn2x r10; the host programs (`bash examples/compression/host/build_hosts.sh`, into
+#   host/bin); lz4, gzip, python3. sudo only to count kernel messages. No cable, no DDR mode change.
+# Run:   examples/compression/run.sh [variant ...]
+# Prints: one line per variant and input: variant, input, what was checked, the kernel throughput the host program
+#   reports (MB/s), OK / FAIL; then "COMPRESSION: N OK, N FAIL, N SKIP; DMA failed in dmesg so far: N" (since boot).
+# PASS: 0 FAIL (exit code 0). gunzip of zeros.bin is a SKIP, not a pass: gzip_decompress_mm returns 0 bytes for
+#   streams compressed more than roughly 100-300:1, and stock gzip -6 of zeros is ~1000:1 (see the README's Results).
+# Takes: a few minutes for all variants; each step is limited to 300 s. Inputs and logs: data/ next to this script.
+
 set -u
+# 1. paths, the card (its summary line hidden), XRT; the variants to run
 D=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$D/../.." && pwd); B=$D/host/bin; X=$REPO/xclbin
 . "$REPO/common/card_env.sh" >/dev/null || exit 1
 source /opt/xilinx/xrt/setup.sh >/dev/null
 VS=${*:-$(for v in lz4 lz4x4 lz4x8 gzip gzip8 gzip_x4 gunzip gzip_combo; do [ -s $X/$v.xclbin ] && echo $v; done)}
+# 2. the three 32 MB inputs, made once in data/
 mkdir -p "$D/data"; cd "$D/data"
 python3 - <<'PY'
 import glob, os
@@ -22,10 +35,13 @@ if not os.path.exists('text.bin'):
 if not os.path.exists('random.bin'): open('random.bin', 'wb').write(os.urandom(N))
 if not os.path.exists('zeros.bin'): open('zeros.bin', 'wb').write(bytes(N))
 PY
+# 3. helpers: mcr = the decompressor's -mcr for a file; kt = a host log's throughput; res = count and print a result
 # the decompressor's output buffer is input x -mcr: pass the file's real ratio (+ margin), at least the host's default 20
 mcr() { python3 -c "import os,sys; print(max(20, -(-os.path.getsize(sys.argv[1]) // os.path.getsize(sys.argv[2])) + 2))" "$1" "$2"; }
 kt() { grep -aE 'KT\(MBps\)' "$1" | tr -s '\t ' ' ' | sed 's/.*KT(MBps) *:\? *//' | head -1; }
 ok=0; bad=0; skip=0; res() { if [ "$2" = OK ]; then ok=$((ok+1)); else bad=$((bad+1)); fi; printf '%-11s %-10s %-34s %s MB/s %s\n' "$1" "$3" "$4" "${5:-?}" "$2"; }
+# 4. every variant x every input. `;;&` goes on testing the next patterns, so gzip_combo runs the compress test, then
+#    gunzip's test, then its own FPGA -> FPGA round trip
 for v in $VS; do
   [ -s $X/$v.xclbin ] || { echo "*** no $X/$v.xclbin"; bad=$((bad+1)); continue; }
   for f in text.bin random.bin zeros.bin; do
@@ -53,5 +69,6 @@ for v in $VS; do
     esac
   done
 done
+# 5. the total; the exit code is 0 only with no FAIL
 echo "COMPRESSION: $ok OK, $bad FAIL, $skip SKIP; DMA failed in dmesg so far: $(sudo -n dmesg 2>/dev/null | grep -c 'DMA failed')"
 [ $bad = 0 ]
