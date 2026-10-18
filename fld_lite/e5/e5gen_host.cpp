@@ -406,7 +406,7 @@ int main(int argc, char **argv)
   if (sr[0] > 1 && sr[6] > sr[5]) {
     const double d = (sr[6] - sr[5]) * us * 1e-6, fps = (sr[0] - 1) / d;
     const double avg = (double)sr[1] / sr[0], wire = fps * (avg + 24) * 8e-9;   // + preamble/SFD/FCS/IFG (8+4+12)
-    printf("RATE through FLD-lite: %.3f M frames/s, %.2f Gb/s of frames (%.2f Gb/s on the wire incl. FCS/preamble/IFG; 10 GbE line)\n",
+    printf("RATE through FLD-lite: %.3f M frames/s, %.2f Gb/s of frames (%.2f Gb/s on the wire incl. FCS/preamble/IFG)\n",
            fps * 1e-6, fps * avg * 8e-9, wire);
     if (zuc) printf("ZUC: %.3f M requests/s, %.2f Gb/s of ZUC payload\n", fps * 1e-6, fps * ((double)zpay / K) * 8e-9);
   }

@@ -108,6 +108,12 @@ SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2020-2021 Gabi Malka
 SPDX-License-Identifier = "Apache-2.0 AND BSD-2-Clause AND LicenseRef-AMD-IP"
 
 [[annotations]]
+path = ["xclbin/iperf_client.xclbin"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2018 Systems Group, ETH Zurich", "2016 Xilinx, Inc.", "Advanced Micro Devices, Inc."]
+SPDX-License-Identifier = "Apache-2.0 AND BSD-3-Clause AND LicenseRef-AMD-IP"
+
+[[annotations]]
 path = ["xclbin/memcached.xclbin"]
 precedence = "override"
 SPDX-FileCopyrightText = ["2026 the innova2 contributors", "2016 Xilinx, Inc.", "Advanced Micro Devices, Inc."]

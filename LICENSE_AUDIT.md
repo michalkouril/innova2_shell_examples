@@ -150,6 +150,19 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `examples/hostmem/build.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/hostmem/link.cfg` | Ours | — (REUSE.toml) |
 | `examples/hostmem/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/README.md` | Ours | — (REUSE.toml) |
+| `examples/iperf/build.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/build_client.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/fetch_fns.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/iperf_sctl.py` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/kernels/iperf_fns.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/kernels/iperf_fns_tb.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/kernels/iperf_kernel.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/kernels/iperf_kernel_tb.cpp` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/link.cfg` | Ours | — (REUSE.toml) |
+| `examples/iperf/link_client.cfg` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
+| `examples/iperf/run_client.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/lat_probe/build.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
 | `examples/lat_probe/link.cfg` | Ours | — (REUSE.toml) |
 | `examples/lat_probe/run.sh` | Ours | SPDX-FileCopyrightText: 2026 the innova2 contributors; SPDX-License-Identifier: Apache-2.0 |
@@ -424,6 +437,8 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 | `xclbin/gzip_x4.xclbin` | Vitis-built binary containing AMD IP | binary |
 | `xclbin/hls4ml.xclbin` | Vitis-built binary containing AMD IP | binary |
 | `xclbin/hostmem.xclbin` | Vitis-built binary containing AMD IP | binary |
+| `xclbin/iperf.xclbin` | Vitis-built binary containing AMD IP | binary |
+| `xclbin/iperf_client.xclbin` | Vitis-built binary containing AMD IP | binary |
 | `xclbin/lat_probe.xclbin` | Vitis-built binary containing AMD IP | binary |
 | `xclbin/lz4.xclbin` | Vitis-built binary containing AMD IP | binary |
 | `xclbin/lz4x4.xclbin` | Vitis-built binary containing AMD IP | binary |
@@ -436,7 +451,7 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 ## Classes
 
 * **Licence text** (9 files): Verbatim licence texts (SPDX licence list) and our LicenseRef explanation.
-* **Ours** (165 files): Written in this project: Apache-2.0, (c) 2026 the innova2 contributors (SPDX header or REUSE.toml).
+* **Ours** (178 files): Written in this project: Apache-2.0, (c) 2026 the innova2 contributors (SPDX header or REUSE.toml).
 * **Ours, GPL-2.0-only** (4 files): Our Linux kernel modules (SPDX tag in the file).
 * **Ours, generated data** (18 files): Produced by our scripts from our own model or measurements (weights, checksums, manifests).
 * **Ours, with Mellanox-derived macros** (1 files): prm.h: accessor macros following Mellanox include/linux/mlx5/device.h (dual GPL-2.0 / OpenIB BSD), used under Linux-OpenIB.
@@ -448,4 +463,4 @@ location on the build machine. No credentials, e-mail addresses, serial numbers 
 * **Ours + AMD Apache-2.0 code** (3 files): Our tool that contains or includes AMD Vitis Libraries kernel code (Apache-2.0).
 * **hls4ml (generated / templates), Apache-2.0** (53 files): Output of hls4ml from our model; nnet_utils are hls4ml's templates.
 * **Dataset derivative, CC-BY-4.0** (1 files): Derived from the hls4ml_lhc_jets_hlf dataset (attribution in NOTICE).
-* **Vitis-built binary containing AMD IP** (17 files): xclbin: our kernels (and any third-party kernels listed in NOTICE) plus the AMD IP of the dynamic region, under AMD's terms (LicenseRef-AMD-IP): distributable as a bitstream, to program AMD devices only.
+* **Vitis-built binary containing AMD IP** (19 files): xclbin: our kernels (and any third-party kernels listed in NOTICE) plus the AMD IP of the dynamic region, under AMD's terms (LicenseRef-AMD-IP): distributable as a bitstream, to program AMD devices only.

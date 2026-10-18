@@ -30,7 +30,7 @@ existing kernel arguments, so older hosts keep working: `fld_rx pre = npre | K <
 adaptive by default), `fld_tx inline_max = cap | adaptive << 16`, `fld_tx maxb = batch | linger << 8`. Sweep with
 `--sample 4` (1 frame in 16 byte-checked): checking every frame makes `sink_rx` the bottleneck.
 
-## Measured (HP Z440, Xeon E5-1603 v4; inn2x r10, 300 MHz, 10 GbE; 2026-10-17)
+## Measured (HP Z440, Xeon E5-1603 v4; inn2x r10, 300 MHz, 25 GbE DAC; 2026-10-17)
 
 `examples/fld_echo/run.sh`: the FPGA generator on port 1, FLD-lite echoing on port 0, 200,000 frames per size at gap 0,
 K = 4 burst polling, 0 TX / RX errors and 0 mismatches:
@@ -40,7 +40,7 @@ K = 4 burst polling, 0 TX / RX errors and 0 mismatches:
 | 64 B | 2.75 M frames/s |
 | 256 B | 1.64 M frames/s |
 | 512 B | 1.57 M frames/s (6.4 Gb/s) |
-| 1024 / 1500 B | 10 GbE line rate, lossless (1.21 / 0.79 M frames/s) |
+| 1024 / 1500 B | 9.94 / 9.42 Gb/s of frames, lossless (1.21 / 0.79 M frames/s) |
 
 Idle 64 B echo: host round trip 4.29 us, of which ConnectX RX CQE to TX CQE in the FPGA 1.87 us. ZUC
 (`examples/zuc`, 4 cores at 227 MHz): integrity 19.45 Gb/s, confidentiality 9.67 Gb/s on 8191 B frames, 0 errors.

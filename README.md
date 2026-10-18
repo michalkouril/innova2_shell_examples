@@ -13,6 +13,7 @@ a card; the table gives the result of that run (see "Results").
 | `examples/zuc` | ZUC (3GPP 128-EEA3 / 128-EIA3) encryption / integrity inline in the network path, 4 cores | FLD-lite + zuc_in, zuc_k (RTL), zuc_out + generator / checker |
 | `examples/memcached` | a memcached server (binary protocol over UDP) in the FPGA; hash table and values in DDR | FLD-lite + udp_rx_lite, mcd, mcd_mem, mcd_dbg, udp_tx_lite |
 | `examples/ntp` | an NTP server answered by the FPGA: a disciplined time-of-day counter, replies stamped and built in place (no PPS yet: the host's clock is the reference) | FLD-lite + ntp_resp, ntp_tod, ntp_ctl |
+| `examples/iperf` | an iperf2 UDP server in the FPGA: a stock `iperf -c -u` gets its "Server Report" from the card (counted, lost, out of order, jitter, pps); also the FPGA as the iperf2 client (ETH Zurich fpga-network-stack, fetched at build time) | FLD-lite + iperf_srv, iperf_tmr, iperf_sctl; client: udp_rx_lite, iperf_udp_fns, iperf_clock, iperf_ctl, udp_tx_lite |
 | `examples/hls4ml` | neural-network inference per packet: hls4ml's jet tagger (16 → 64 → 32 → 32 → 5) answers UDP requests | FLD-lite + h4ml_jet |
 | `examples/compression` | LZ4 and GZip from AMD Vitis Libraries: LZ4 with 2 / 4 / 8 engines, GZip 2 / 8 cores, GZip decompression, compress + decompress in one xclbin | xilLz4Compress, xilGzipCompBlock, xilDecompress |
 | `examples/lat_probe` | kernel-to-memory latency per memory type (on-chip window, DDR) | lat_probe |
@@ -47,7 +48,7 @@ To build xclbins: Vitis 2023.2, XRT, and the dev platform from `innova2_shell_de
 git clone https://github.com/michalkouril/innova2_shell_examples.git && cd innova2_shell_examples
 sha256sum -c xclbin/SHA256SUMS
 bash fld_lite/host_setup.sh                 # host programs + innova2_peermem.ko
-bash examples/hls4ml/run.sh                 # likewise memcached, ntp, zuc, fld_echo, lat_probe, hostmem
+bash examples/hls4ml/run.sh                 # likewise memcached, ntp, iperf, zuc, fld_echo, lat_probe, hostmem
 HLS_INCLUDE=... bash examples/compression/host/build_hosts.sh && bash examples/compression/run.sh
 ```
 
@@ -83,10 +84,11 @@ Data clock = the frequency v++ chose for the kernels (the platform asks for 300 
 
 | example | data clock | result |
 |---|---|---|
-| fld_echo | 300 MHz | 200,000 frames at gap 0 each size, 0 TX / RX errors, 0 mismatches: 2.75 M frames/s at 64 B, 1.64 M at 256 B, 1.57 M at 512 B, 10 GbE line rate lossless at 1024 B (1.21 M frames/s, 9.94 Gb/s) and 1500 B; 64 B idle echo round trip 4.29 µs mean (p99 5.45), of which the FPGA's RX CQE → TX CQE 1.87 µs |
+| fld_echo | 300 MHz | 200,000 frames at gap 0 each size, 0 TX / RX errors, 0 mismatches: 2.75 M frames/s at 64 B, 1.64 M at 256 B, 1.57 M at 512 B, lossless at 1024 B (1.21 M frames/s, 9.94 Gb/s of frames) and 1500 B (0.79 M, 9.42 Gb/s) -- FLD-lite's own rates: the ports run at 25 GbE; 64 B idle echo round trip 4.29 µs mean (p99 5.45), of which the FPGA's RX CQE → TX CQE 1.87 µs |
 | zuc | 227 MHz | 0 mismatches in every run. Integrity 8191 B 19.45 Gb/s, 4096 B 16.05 Gb/s; confidentiality 8191 B 9.67 Gb/s, 4096 B 9.13 Gb/s; paced 4096 B 7.24 Gb/s lossless |
 | memcached | 300 MHz | client 10/10 PASS (SET / GET byte-exact / miss / overwrite / DELETE / oversize SET refused); 65,536 keys preloaded (18 refused: full buckets, as C simulation predicts); 0 lost in every run: 86.8k req/s at p50 11.3 µs (window 1); GETs 1.12 M req/s (4 threads × 16) and 1.44 M req/s (4 × 64); GET/SET mixes 1.13 M (10 % SETs), 1.06 M (50 %), 1.28 M req/s (100 %, 4 × 64) -- the client host's 4 cores set these rates. Hash table 131,072 buckets × 4 keys, value store 524,288 × 2 KB; `kernels/mcd_load_tb.cpp` checks the stall and overwrite fixes and the capacity in C simulation |
 | ntp | 300 MHz | NTP-CLIENT PASS: 2,200 replies, every origin echoed, v3 and v4; 6 invalid requests dropped and counted; FPGA − host offset p50 +231 ns (p5 −466, p95 +783); servo locked, last offsets +190 / +214 / −112 ns; `chronyd -Q` 3 µs; FPGA residence 170 ns; load 1.39 M replies/s (4 threads × 32), 0 lost of 13.1 M |
+| iperf | 300 MHz | stock iperf 2.2.1 `iperf -c -u` against the FPGA, every test 0 lost, its Server Report from the card: 1 stream 249 Mb/s at 64 B (487k pps), 5.23 Gb/s at 1470 B, 10.7 Gb/s at 8 KB; 4 streams (FPGA / NIC counters): 1.86 M datagrams/s at 64 B, 20.0 Gb/s at 1470 B, **24.8 Gb/s at 8 KB = 25 GbE line rate**; tests back to back without a reload. The ports run at 25 GbE (25G DAC); the FPGA as the client (fns iperf_udp, `iperf_client.xclbin`) sends at 25 GbE line rate: 2.03 M datagrams/s at 1472 B, 24.8 Gb/s at 8 KB (NIC counters = fld_tx frames) |
 | hls4ml | 241 MHz | 166,000 jets, 0 lost, every score equal to hls4ml's bit-accurate model, 60.4k jets/s (Python client); accuracy vs labels 0.763; ping-pong RTT median 23.0 µs |
 | lat_probe | 300 MHz | per access, DDR mode `on`: write+ack 88 cycles, read 104 cycles; HYBRID URAM window: 70 / 72 cycles |
 | hostmem | 300 MHz | kernel ↔ host RAM: 32768 beats each way, 0 wrong; 6.97 GB/s write, 7.43 GB/s read; dependent read 1.05 µs |
